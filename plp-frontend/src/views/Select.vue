@@ -15,25 +15,22 @@
     
     <main class="main-content">
       <div class="selection-container">
-        <h1 class="page-title">选择您的漂流瓶配置</h1>
+        <h1 class="page-title">你要投出怎样的漂流瓶？</h1>
         
         <!-- 第一个单选组：载体选择 -->
         <div class="selection-group">
           <div class="group-header">
             <h2 class="group-title">请选择载体</h2>
-            <el-button 
-              type="info" 
-              icon="QuestionFilled" 
-              circle 
-              @click="showCarrierHelp"
-              class="help-button"
-            />
           </div>
           
           <div class="radio-group">
             <el-radio-group v-model="selectedCarrier">
-              <el-radio label="牛皮纸" size="large">牛皮纸</el-radio>
-              <el-radio label="永恒纸" size="large">永恒纸</el-radio>
+              <el-tooltip class="item" effect="dark" content="普通的纸，随心畅写，他人可补充幻想的内容" placement="bottom">
+                <el-radio label="牛皮纸" size="large">牛皮纸</el-radio>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="永恒的只读，扔出后内容不可再补充，他人仅可查阅、回应" placement="bottom">
+                <el-radio label="永恒纸" size="large">永恒纸</el-radio>
+              </el-tooltip>
             </el-radio-group>
           </div>
         </div>
@@ -42,19 +39,16 @@
         <div class="selection-group">
           <div class="group-header">
             <h2 class="group-title">请选择幻想类型</h2>
-            <el-button 
-              type="info" 
-              icon="QuestionFilled" 
-              circle 
-              @click="showFantasyHelp"
-              class="help-button"
-            />
           </div>
           
           <div class="radio-group">
             <el-radio-group v-model="selectedFantasy">
-              <el-radio label="空想" size="large">空想</el-radio>
-              <el-radio label="联想" size="large">联想</el-radio>
+              <el-tooltip class="item" effect="dark" content="你最多可以书写4000字的天马行空，不包含图片" placement="bottom">
+                <el-radio label="空想" size="large">空想</el-radio>
+              </el-tooltip>
+              <el-tooltip class="item" effect="dark" content="你最多可以书写8000字的天马行空，还要附上几张相关图片哦" placement="bottom">
+                <el-radio label="联想" size="large">联想</el-radio>
+              </el-tooltip>
             </el-radio-group>
           </div>
         </div>
@@ -81,49 +75,6 @@
       </div>
     </main>
     
-    <!-- 载体帮助说明弹窗 -->
-    <el-dialog
-      v-model="carrierHelpVisible"
-      title="载体说明"
-      width="80%"
-      center
-    >
-      <div class="help-content">
-        <h3>牛皮纸</h3>
-        <p>普通的纸，随心畅写，他人可补充幻想的内容</p>
-        
-        <h3>永恒纸</h3>
-        <p>扔出后内容不可再补充，他人仅可查阅、回应</p>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button type="primary" @click="carrierHelpVisible = false">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
-    
-    <!-- 幻想类型帮助说明弹窗 -->
-    <el-dialog
-      v-model="fantasyHelpVisible"
-      title="幻想类型说明"
-      width="80%"
-      center
-    >
-      <div class="help-content">
-        <h3>空想</h3>
-        <p>允许用户发布不超过4000字的内容，不包含图片</p>
-        <p>没有其余特殊要求，自由发挥吧~</p>
-        
-        <h3>联想</h3>
-        <p>允许用户发布不超过8000字的内容，必须包含图片</p>
-        <p>文本内容必须和图片的内容有强相关性</p>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button type="primary" @click="fantasyHelpVisible = false">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
     
     <!-- 网站说明弹窗 -->
     <el-dialog
@@ -198,20 +149,6 @@ export default {
     const selectedCarrier = ref('') // 载体选择
     const selectedFantasy = ref('') // 幻想类型选择
     
-    // 帮助弹窗显示状态
-    const carrierHelpVisible = ref(false)
-    const fantasyHelpVisible = ref(false)
-    
-    // 显示载体帮助弹窗
-    const showCarrierHelp = () => {
-      carrierHelpVisible.value = true
-    }
-    
-    // 显示幻想类型帮助弹窗
-    const showFantasyHelp = () => {
-      fantasyHelpVisible.value = true
-    }
-
     // 返回首页
     const goToHome = () => {
       router.push('/')
@@ -254,10 +191,6 @@ export default {
       videoSource,
       selectedCarrier,
       selectedFantasy,
-      carrierHelpVisible,
-      fantasyHelpVisible,
-      showCarrierHelp,
-      showFantasyHelp,
       confirmSelection,
       cancelSelection,
       dialogVisible,
