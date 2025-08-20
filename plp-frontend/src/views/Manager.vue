@@ -1094,7 +1094,7 @@ export default {
         }
         
         // 发送删除请求
-        const response = await fetch(`${API_ENDPOINTS.records}/${commentId}`, {
+        const response = await fetch(`${API_ENDPOINTS.comments}/${commentId}`, {
           method: 'DELETE',
           headers
         })
