@@ -111,7 +111,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import HeaderComponent from '../components/Header.vue'
-import api from '../api'
+import { API_ENDPOINTS } from '../api'
 
 export default {
   name: 'AdminInit',
@@ -175,8 +175,23 @@ export default {
         if (valid) {
           loading.value = true
           try {
-            await api.initAdminPassword(initForm.password)
-            successDialogVisible.value = true
+            const response = await fetch(API_ENDPOINTS.adminInit, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                password: initForm.password
+              })
+            })
+            
+            if (response.ok) {
+              successDialogVisible.value = true
+            } else {
+              const errorData = await response.json()
+              errorMessage.value = errorData.error || '初始化失败'
+              errorDialogVisible.value = true
+            }
           } catch (error) {
             errorMessage.value = error.message || '初始化失败'
             errorDialogVisible.value = true
