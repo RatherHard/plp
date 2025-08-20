@@ -89,7 +89,7 @@
               <span class="item-time">{{ item.uploadTime }}</span>
             </div>
             <div class="item-header" v-else>
-              <span class="item-id">评论ID: {{ item.id }}</span>
+              <span class="item-id">回应ID: {{ item.id }}</span>
               <span class="item-time">{{ item.createTime }}</span>
             </div>
             <div class="item-preview">
@@ -99,7 +99,7 @@
             </div>
           </div>
           <div v-if="activeList.length === 0" class="no-content">
-            暂无内容
+            暂无内容（已审核通过的回应请到对应漂流瓶下查询）
           </div>
         </div>
       </div>
