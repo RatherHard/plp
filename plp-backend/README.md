@@ -56,7 +56,7 @@
   npm start
   ```
 
-项目默认运行在 `http://localhost:3000`
+项目默认运行在 `http://localhost:3001`
 
 ## API 文档
 
@@ -64,7 +64,7 @@
 
 启动项目后，可以通过以下地址访问 API 文档：
 ```
-http://localhost:3000/api-docs
+http://localhost:3001/api-docs
 ```
 
 在 API 文档界面中，您可以：
