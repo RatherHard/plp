@@ -393,7 +393,7 @@ export default {
           console.log('内容未编辑，假装成功投出');
           
           // 显示成功弹窗
-          ElMessageBox.alert('内容未编辑，假装成功投出！', '扔出成功', {
+          ElMessageBox.alert('漂流瓶将飘向下一个人~', '扔出成功', {
             confirmButtonText: '确定',
             type: 'success',
             showClose: false  // 禁用右上角关闭按钮，确保用户必须点击确定按钮
