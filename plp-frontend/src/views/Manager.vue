@@ -636,7 +636,7 @@ export default {
         
         if(response.ok) {
           const data = await response.json()
-          
+          console.log('管理员状态:', data.isInitialized);
           if (!data.isInitialized) {
             // 如果未初始化，跳转到初始化页面
             router.push('/admin-init')
@@ -1159,6 +1159,8 @@ export default {
     
     // 组件挂载时获取内容列表
     onMounted(async () => {
+      await checkAdminInitialization()
+
       const token = localStorage.getItem('adminToken')
       if (token) {
         // 检查token是否有效

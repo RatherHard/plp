@@ -2,73 +2,64 @@
   <div class="admin-init-container">
     <HeaderComponent @show-instructions="showInstructions" />
     
-    <div class="video-background">
-      <video 
-        class="background-video" 
-        :src="videoSource" 
-        autoplay 
-        loop 
-        muted
-        v-if="videoSource"
-      ></video>
-      <div v-else class="fallback-background"></div>
-    </div>
-    
-    <main class="main-content">
-      <div class="init-card">
-        <el-card class="init-card-content">
-          <template #header>
-            <div class="card-header">
-              <h2>管理员密码初始化</h2>
+    <div class="manager-container">
+  
+      <main class="main-content">
+        <div class="init-card">
+          <el-card class="init-card-content">
+            <template #header>
+              <div class="card-header">
+                <h2>管理员密码初始化</h2>
+              </div>
+            </template>
+            
+            <div class="init-description">
+              <p>检测到系统尚未设置管理员密码，请先初始化管理员密码。</p>
+              <p>请输入您想要设置的管理员密码：</p>
             </div>
-          </template>
-          
-          <div class="init-description">
-            <p>检测到系统尚未设置管理员密码，请先初始化管理员密码。</p>
-            <p>请输入您想要设置的管理员密码：</p>
-          </div>
-          
-          <el-form 
-            ref="initFormRef"
-            :model="initForm" 
-            :rules="initRules"
-            label-position="top"
-            @submit.prevent="handleInit"
-          >
-            <el-form-item label="管理员密码" prop="password">
-              <el-input
-                v-model="initForm.password"
-                type="password"
-                placeholder="请输入管理员密码"
-                show-password
-              />
-            </el-form-item>
             
-            <el-form-item label="确认密码" prop="confirmPassword">
-              <el-input
-                v-model="initForm.confirmPassword"
-                type="password"
-                placeholder="请再次输入管理员密码"
-                show-password
-                @keyup.enter="handleInit"
-              />
-            </el-form-item>
-            
-            <el-form-item>
-              <el-button 
-                type="primary" 
-                @click="handleInit"
-                :loading="loading"
-                class="init-button"
-                size="large"
-              >
-                初始化密码
-              </el-button>
-            </el-form-item>
-          </el-form>
-        </el-card>
-      </div>
-    </main>
+            <el-form 
+              ref="initFormRef"
+              :model="initForm" 
+              :rules="initRules"
+              label-position="top"
+              @submit.prevent="handleInit"
+            >
+              <el-form-item label="管理员密码" prop="password">
+                <el-input
+                  v-model="initForm.password"
+                  type="password"
+                  placeholder="请输入管理员密码"
+                  show-password
+                />
+              </el-form-item>
+              
+              <el-form-item label="确认密码" prop="confirmPassword">
+                <el-input
+                  v-model="initForm.confirmPassword"
+                  type="password"
+                  placeholder="请再次输入管理员密码"
+                  show-password
+                  @keyup.enter="handleInit"
+                />
+              </el-form-item>
+              
+              <el-form-item>
+                <el-button 
+                  type="primary" 
+                  @click="handleInit"
+                  :loading="loading"
+                  class="init-button"
+                  size="large"
+                >
+                  初始化密码
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-card>
+        </div>
+      </main>
+    </div>
     
     <el-dialog
       v-model="successDialogVisible"
@@ -153,17 +144,25 @@ export default {
         }
       ]
     }
-    
+
     // 检查是否已经初始化
     const checkInitialization = async () => {
       try {
-        const response = await api.checkAdminInitialization()
-        if (response.isInitialized) {
-          // 如果已经初始化，跳转到管理页面
-          router.push('/manager')
+        const response = await fetch(API_ENDPOINTS.checkAdminInitialized)
+        
+        if(response.ok) {
+          const data = await response.json()
+          console.log('管理员状态:', data.isInitialized);
+          if (data.isInitialized) {
+            //已初始化
+            router.push('/manager')
+          }
+        } else {
+          ElMessage.error('无法检查管理员状态')
         }
       } catch (error) {
         console.error('检查管理员初始化状态失败:', error)
+        ElMessage.error('网络错误，检查管理员状态失败')
       }
     }
     
@@ -254,33 +253,18 @@ export default {
 </script>
 
 <style scoped>
+.manager-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+}
+
 .admin-init-container {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-}
-
-.video-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.background-video {
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-  opacity: 0.8;
 }
 
 .fallback-background {
@@ -303,6 +287,10 @@ export default {
   margin: 20px;
 }
 
+.init-card label{
+  color: #fff;
+}
+
 .init-card-content {
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.1);
@@ -316,7 +304,7 @@ export default {
 
 .card-header h2 {
   margin: 0;
-  color: #333;
+  color: #fff;
   font-size: 24px;
 }
 
@@ -327,7 +315,7 @@ export default {
 
 .init-description p {
   margin: 10px 0;
-  color: #555;
+  color: #fff;
 }
 
 .init-button {
