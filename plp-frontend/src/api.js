@@ -24,7 +24,7 @@ export const API_ENDPOINTS = {
   verifyToken: `${BASE_URL}/api/admin/verify-token`,  // 添加验证token接口
 
   // 上传文件访问
-  uploads: `${BASE_URL}/uploads`
+  uploads: `${BASE_URL}/uploads/`
 };
 
 export default {
