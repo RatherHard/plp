@@ -5,6 +5,7 @@ import Edit from '../views/Edit.vue'
 import Manager from '../views/Manager.vue'
 import Select from '../views/Select.vue'
 import Introduction from '../views/Introduction.vue'
+import AdminInit from '../views/AdminInit.vue'
 
 console.log('开始初始化路由...')
 
@@ -38,6 +39,12 @@ const routes = [
     path: '/introduction',
     name: 'Introduction',
     component: Introduction
+  },
+  // 添加管理员初始化路由
+  {
+    path: '/admin-init',
+    name: 'AdminInit',
+    component: AdminInit
   },
   // 添加默认路由重定向
   {

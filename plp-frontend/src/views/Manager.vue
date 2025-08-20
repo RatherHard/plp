@@ -342,6 +342,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { API_ENDPOINTS } from '../api'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'Manager',
@@ -349,6 +350,8 @@ export default {
     Search
   },
   setup() {
+    const router = useRouter()
+    
     const approvedList = ref([])
     const pendingList = ref([])
     const selectedItem = ref(null)
@@ -581,6 +584,27 @@ export default {
       } catch (error) {
         console.error('获取待审核内容时出错:', error)
         ElMessage.error('网络错误，获取待审核内容失败')
+      }
+    }
+    
+    // 检查管理员密码是否已初始化
+    const checkAdminInitialization = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.checkAdminInitialized)
+        
+        if(response.ok) {
+          const data = await response.json()
+          
+          if (!data.isInitialized) {
+            // 如果未初始化，跳转到初始化页面
+            router.push('/admin-init')
+          }
+        } else {
+          ElMessage.error('无法检查管理员状态')
+        }
+      } catch (error) {
+        console.error('检查管理员初始化状态失败:', error)
+        ElMessage.error('网络错误，检查管理员状态失败')
       }
     }
     
@@ -1088,6 +1112,27 @@ export default {
       }
     }
     
+    // 检查管理员密码是否已初始化
+    const checkAdminInitialization = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.checkAdminInitialized)
+        
+        if(response.ok) {
+          const data = await response.json()
+          
+          if (!data.isInitialized) {
+            // 如果未初始化，跳转到初始化页面
+            router.push('/admin-init')
+          }
+        } else {
+          ElMessage.error('无法检查管理员状态')
+        }
+      } catch (error) {
+        console.error('检查管理员初始化状态失败:', error)
+        ElMessage.error('网络错误，检查管理员状态失败')
+      }
+    }
+    
     // 组件挂载时获取内容列表
     onMounted(async () => {
       // 检查是否已登录
@@ -1096,11 +1141,10 @@ export default {
         // 已登录，获取内容列表
         await fetchPendingContent()
         await fetchApprovedContent()
+      } else {
+        // 检查管理员密码是否已初始化
+        await checkAdminInitialization()
       }
-      // 不再自动显示登录弹窗
-      // else {
-      //   loginDialogVisible.value = true
-      // }
     })
     
     return {

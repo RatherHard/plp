@@ -196,6 +196,46 @@ app.post('/api/admin/init', async (req, res) => {
 
 /**
  * @swagger
+ * /api/admin/check:
+ *   get:
+ *     summary: 检查管理员密码是否已初始化
+ *     description: 检查系统是否已设置管理员密码
+ *     responses:
+ *       200:
+ *         description: 检查成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isInitialized:
+ *                   type: boolean
+ *                   example: false
+ *       500:
+ *         description: 服务器内部错误
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 服务器内部错误
+ */
+// 检查管理员密码是否已初始化接口
+app.get('/api/admin/check', async (req, res) => {
+  try {
+    // 检查管理员密码是否已设置
+    const isSet = await db.isAdminPasswordSet();
+    res.status(200).json({ isInitialized: isSet });
+  } catch (error) {
+    console.error('检查管理员密码状态错误:', error);
+    res.status(500).json({ error: '服务器内部错误' });
+  }
+});
+
+/**
+ * @swagger
  * /admin/login:
  *   post:
  *     summary: 管理员登录
