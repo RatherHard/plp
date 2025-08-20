@@ -1,0 +1,15 @@
+{
+  "name": "plp",
+  "version": "1.0.0",
+  "description": "幻想漂流瓶 - 前后端分离项目",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix plp-backend\" \"npm run dev --prefix plp-frontend\"",
+    "dev:backend": "npm run dev --prefix plp-backend",
+    "dev:frontend": "npm run dev --prefix plp-frontend",
+    "install:all": "npm install && npm install --prefix plp-backend && npm install --prefix plp-frontend",
+    "build": "npm run build --prefix plp-frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+plp-backend/node_modules/
+plp-frontend/node_modules/
+
+package-lock.json
+plp-backend/package-lock.json
+plp-frontend/package-lock.json
+
+# Uploads directory
+plp-backend/uploads/
+
+# Sqlite database
+database.sqlite
+plp-backend/database.sqlite
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻想漂流瓶</title>
+  </head>
+  <body>
+    <div id="app">
+      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+        <p>正在加载应用...</p>
+        <p>如果长时间未加载，请检查控制台是否有错误信息</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+    <script>
+      // 添加错误处理
+      window.addEventListener('error', function(e) {
+        console.error('全局错误:', e.error);
+      });
+      
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('未处理的Promise拒绝:', e.reason);
+      });
+    </script>
+  </body>
+</html>
