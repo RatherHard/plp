@@ -217,17 +217,17 @@
           </el-descriptions>
         </div>
         
-        <!-- 已审核帖子的评论区域 -->
+        <!-- 已审核帖子的回应区域 -->
         <div class="detail-comments" v-if="activeTab === 'approved' && selectedItem">
           <div class="comments-header">
-            <h3>已审核评论 ({{ approvedCommentsList.length }})</h3>
+            <h3>已审核回应 ({{ approvedCommentsList.length }})</h3>
           </div>
           
-          <!-- 评论搜索栏 -->
+          <!-- 回应搜索栏 -->
           <div class="comment-search-bar">
             <el-input
               v-model="commentSearchKeyword"
-              placeholder="搜索评论ID..."
+              placeholder="搜索回应ID..."
               clearable
               style="width: 300px; margin-bottom: 15px;"
             >
@@ -265,8 +265,8 @@
             <div v-if="filteredApprovedComments.length === 0" class="no-comments">
               {{
                 commentSearchKeyword ? 
-                `未找到ID包含"${commentSearchKeyword}"的评论` : 
-                '暂无已审核评论'
+                `未找到ID包含"${commentSearchKeyword}"的回应` : 
+                '暂无已审核回应'
               }}
             </div>
           </div>
@@ -274,11 +274,11 @@
         
         <div class="detail-info" v-else-if="activeTab === 'comments'">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="评论ID" :label-class-name="'desc-label'">
+            <el-descriptions-item label="回应ID" :label-class-name="'desc-label'">
               <template #label>
                 <div class="desc-label">
                   <el-icon><Document /></el-icon>
-                  评论ID
+                  回应ID
                 </div>
               </template>
               {{ selectedItem.id }}
@@ -294,21 +294,21 @@
               {{ selectedItem.recordId }}
             </el-descriptions-item>
             
-            <el-descriptions-item label="评论内容" :label-class-name="'desc-label'">
+            <el-descriptions-item label="回应内容" :label-class-name="'desc-label'">
               <template #label>
                 <div class="desc-label">
                   <el-icon><ChatLineSquare /></el-icon>
-                  评论内容
+                  回应内容
                 </div>
               </template>
               <div class="content-text">{{ selectedItem.content || selectedItem.text }}</div>
             </el-descriptions-item>
             
-            <el-descriptions-item label="评论时间" :label-class-name="'desc-label'">
+            <el-descriptions-item label="回应时间" :label-class-name="'desc-label'">
               <template #label>
                 <div class="desc-label">
                   <el-icon><Clock /></el-icon>
-                  评论时间
+                  回应时间
                 </div>
               </template>
               {{ selectedItem.commentTime }}
@@ -366,22 +366,22 @@ export default {
     // 添加搜索关键字状态
     const searchKeyword = ref('')
     
-    // 添加待审核评论列表状态
+    // 添加待审核回应列表状态
     const pendingCommentsList = ref([])
     
-    // 添加已审核评论列表状态
+    // 添加已审核回应列表状态
     const approvedCommentsList = ref([])
     
-    // 添加评论搜索关键字状态
+    // 添加回应搜索关键字状态
     const commentSearchKeyword = ref('')
     
-    // 添加过滤已审核评论的计算属性
+    // 添加过滤已审核回应的计算属性
     const filteredApprovedComments = computed(() => {
       if (!commentSearchKeyword.value) {
         return approvedCommentsList.value
       }
       
-      // 根据评论ID进行过滤（支持部分匹配）
+      // 根据回应ID进行过滤（支持部分匹配）
       return approvedCommentsList.value.filter(comment => 
         comment.id && comment.id.toString().includes(commentSearchKeyword.value)
       )
@@ -669,7 +669,7 @@ export default {
       }
     }
     
-    // 获取待审核评论列表
+    // 获取待审核回应列表
     const fetchPendingComments = async () => {
       try {
         // 从本地存储获取token
@@ -693,11 +693,11 @@ export default {
           const data = await response.json()
           pendingCommentsList.value = data
         } else {
-          ElMessage.error('获取待审核评论失败')
+          ElMessage.error('获取待审核回应失败')
         }
       } catch (error) {
-        console.error('获取待审核评论时出错:', error)
-        ElMessage.error('网络错误，获取待审核评论失败')
+        console.error('获取待审核回应时出错:', error)
+        ElMessage.error('网络错误，获取待审核回应失败')
       }
     }
     
@@ -705,7 +705,7 @@ export default {
     const selectItem = async (item) => {
       selectedItem.value = item
       
-      // 如果是已审核标签页，获取对应的已审核评论
+      // 如果是已审核标签页，获取对应的已审核回应
       if (activeTab.value === 'approved') {
         await fetchApprovedComments(item.id)
       }
@@ -978,7 +978,7 @@ export default {
       }
     }
     
-    // 通过评论
+    // 通过回应
     const approveComment = async () => {
       if (!selectedItem.value) return
       
@@ -1005,8 +1005,8 @@ export default {
         })
         
         if (response.ok) {
-          ElMessage.success('评论审核通过')
-          // 从待审核评论列表中移除该项
+          ElMessage.success('回应审核通过')
+          // 从待审核回应列表中移除该项
           const index = pendingCommentsList.value.findIndex(item => item.id === selectedItem.value.id)
           if (index > -1) {
             pendingCommentsList.value.splice(index, 1)
@@ -1014,15 +1014,15 @@ export default {
           // 清空选中项
           selectedItem.value = null
         } else {
-          ElMessage.error('评论审核失败')
+          ElMessage.error('回应审核失败')
         }
       } catch (error) {
-        console.error('评论审核时出错:', error)
-        ElMessage.error('网络错误，评论审核失败')
+        console.error('回应审核时出错:', error)
+        ElMessage.error('网络错误，回应审核失败')
       }
     }
     
-    // 拒绝评论
+    // 拒绝回应
     const rejectComment = async () => {
       if (!selectedItem.value) return
       
@@ -1049,8 +1049,8 @@ export default {
         })
         
         if (response.ok) {
-          ElMessage.success('评论已拒绝')
-          // 从待审核评论列表中移除该项
+          ElMessage.success('回应已拒绝')
+          // 从待审核回应列表中移除该项
           const index = pendingCommentsList.value.findIndex(item => item.id === selectedItem.value.id)
           if (index > -1) {
             pendingCommentsList.value.splice(index, 1)
@@ -1058,20 +1058,20 @@ export default {
           // 清空选中项
           selectedItem.value = null
         } else {
-          ElMessage.error('拒绝评论失败')
+          ElMessage.error('拒绝回应失败')
         }
       } catch (error) {
-        console.error('拒绝评论时出错:', error)
-        ElMessage.error('网络错误，拒绝评论失败')
+        console.error('拒绝回应时出错:', error)
+        ElMessage.error('网络错误，拒绝回应失败')
       }
     }
     
-    // 删除已审核评论
+    // 删除已审核回应
     const deleteApprovedComment = async (commentId) => {
       try {
         // 显示确认对话框
         await ElMessageBox.confirm(
-          '确定要删除这条评论吗？此操作不可恢复。',
+          '确定要删除这条回应吗？此操作不可恢复。',
           '确认删除',
           {
             confirmButtonText: '确定',
@@ -1100,16 +1100,16 @@ export default {
         })
         
         if (response.ok) {
-          ElMessage.success('评论已删除')
-          // 从已审核评论列表中移除
+          ElMessage.success('回应已删除')
+          // 从已审核回应列表中移除
           approvedCommentsList.value = approvedCommentsList.value.filter(comment => comment.id !== commentId)
-          // 如果当前选中的内容是这个评论所属的内容，重新获取评论列表
+          // 如果当前选中的内容是这个回应所属的内容，重新获取回应列表
           if (selectedItem.value) {
             await fetchApprovedComments(selectedItem.value.id)
           }
         } else {
           const errorData = await response.json()
-          ElMessage.error(errorData.message || '删除评论失败')
+          ElMessage.error(errorData.message || '删除回应失败')
         }
       } catch (error) {
         // 用户取消操作
@@ -1118,12 +1118,12 @@ export default {
           return
         }
         
-        console.error('删除评论时出错:', error)
-        ElMessage.error('网络错误，删除评论失败')
+        console.error('删除回应时出错:', error)
+        ElMessage.error('网络错误，删除回应失败')
       }
     }
     
-    // 获取已审核评论列表
+    // 获取已审核回应列表
     const fetchApprovedComments = async (recordId) => {
       try {
         // 从本地存储获取token
@@ -1147,12 +1147,12 @@ export default {
           const data = await response.json()
           approvedCommentsList.value = data
         } else {
-          ElMessage.error('获取已审核评论失败')
+          ElMessage.error('获取已审核回应失败')
           approvedCommentsList.value = []
         }
       } catch (error) {
-        console.error('获取已审核评论时出错:', error)
-        ElMessage.error('网络错误，获取已审核评论失败')
+        console.error('获取已审核回应时出错:', error)
+        ElMessage.error('网络错误，获取已审核回应失败')
         approvedCommentsList.value = []
       }
     }
@@ -1207,13 +1207,13 @@ export default {
       approveComment,
       rejectComment,
       fetchApprovedComments,
-      deleteApprovedComment, // 添加删除已审核评论方法
+      deleteApprovedComment, // 添加删除已审核回应方法
       localStorage,
       searchKeyword,
-      commentSearchKeyword, // 添加评论搜索关键字状态
-      filteredApprovedComments, // 添加过滤已审核评论的计算属性
-      pendingCommentsList, // 暴露待审核评论列表
-      approvedCommentsList, // 暴露已审核评论列表
+      commentSearchKeyword, // 添加回应搜索关键字状态
+      filteredApprovedComments, // 添加过滤已审核回应的计算属性
+      pendingCommentsList, // 暴露待审核回应列表
+      approvedCommentsList, // 暴露已审核回应列表
       completeImage
     }
   }
@@ -1511,7 +1511,7 @@ export default {
   min-height: 100px !important;
 }
 
-/* 评论区域样式 */
+/* 回应区域样式 */
 .detail-comments {
   margin-top: 30px;
   padding-top: 20px;
