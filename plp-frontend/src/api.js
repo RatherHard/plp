@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
   adminLogin: `${BASE_URL}/api/admin/login`,
   adminInit: `${BASE_URL}/api/admin/init`,
   checkAdminInitialized: `${BASE_URL}/api/admin/check`,
+  verifyToken: `${BASE_URL}/api/admin/verify-token`,  // 添加验证token接口
 
   // 上传文件访问
   uploads: `${BASE_URL}/uploads`

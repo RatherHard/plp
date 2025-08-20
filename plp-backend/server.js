@@ -1581,6 +1581,54 @@ app.delete('/api/records/:id', requireAdminAuth, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/admin/verify-token:
+ *   get:
+ *     summary: 验证管理员token
+ *     description: 验证管理员token是否有效
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token有效
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                   example: true
+ *       401:
+ *         description: Token无效或未提供
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 无效的token
+ *       500:
+ *         description: 服务器内部错误
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: 服务器内部错误
+ */
+// 验证管理员token接口
+app.get('/api/admin/verify-token', requireAdminAuth, (req, res) => {
+  res.status(200).json({ valid: true });
+});
+
 // 启动服务器
 const server = app.listen(PORT, () => {
   console.log(`服务器运行在端口 ${PORT}`);
