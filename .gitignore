@@ -7,6 +7,9 @@ package-lock.json
 plp-backend/package-lock.json
 plp-frontend/package-lock.json
 
+#static files
+plp-frontend/dist/
+
 # Uploads directory
 plp-backend/uploads/
 
