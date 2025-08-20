@@ -1,7 +1,3 @@
-// API配置文件
-
-import { Comment } from "vue";
-
 // 基础URL配置，可以从环境变量中获取，如果没有则使用默认值
 const PORT = 3001;
 const BASE_URL = 'http://localhost:' + PORT;
