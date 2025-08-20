@@ -121,7 +121,7 @@ function requireAdminAuth(req, res, next) {
 
 /**
  * @swagger
- * /api/admin/init:
+ * /admin/init:
  *   post:
  *     summary: 初始化管理员密码
  *     description: 设置管理员密码（仅在首次使用时调用）
@@ -196,7 +196,7 @@ app.post('/api/admin/init', async (req, res) => {
 
 /**
  * @swagger
- * /api/admin/check:
+ * /admin/check:
  *   get:
  *     summary: 检查管理员密码是否已初始化
  *     description: 检查系统是否已设置管理员密码
@@ -816,7 +816,7 @@ app.post('/api/records/:id/review', requireAdminAuth, async (req, res) => {
 
 /**
  * @swagger
- * /api/records/{id}:
+ * /records/{id}:
  *   put:
  *     summary: 编辑记录
  *     description: 编辑指定ID的可编辑记录（仅可编辑且已审核通过的记录）
@@ -1246,7 +1246,7 @@ app.get('/api/records/:id/comments', async (req, res) => {
 
 /**
  * @swagger
- * /api/comments/pending:
+ * /comments/pending:
  *   get:
  *     summary: 获取所有待审核评论（仅管理员）
  *     description: 获取所有待审核的评论列表
@@ -1312,7 +1312,7 @@ app.get('/api/comments/pending', requireAdminAuth, async (req, res) => {
 
 /**
  * @swagger
- * /api/comments/{id}/review:
+ * /comments/{id}/review:
  *   post:
  *     summary: 审核评论（仅管理员）
  *     description: 审核指定ID的评论，可设置为通过或拒绝
@@ -1421,7 +1421,7 @@ app.post('/api/comments/:id/review', requireAdminAuth, async (req, res) => {
 
 /**
  * @swagger
- * /api/comments/{id}:
+ * /comments/{id}:
  *   delete:
  *     summary: 删除指定评论（仅管理员）
  *     description: 管理员删除指定的评论
@@ -1583,7 +1583,7 @@ app.delete('/api/records/:id', requireAdminAuth, async (req, res) => {
 
 /**
  * @swagger
- * /api/admin/verify-token:
+ * /admin/verify-token:
  *   get:
  *     summary: 验证管理员token
  *     description: 验证管理员token是否有效
