@@ -99,7 +99,7 @@
             </div>
           </div>
           <div v-if="activeList.length === 0" class="no-content">
-            暂无内容（已审核通过的回应请到对应漂流瓶下查询）
+            暂无内容
           </div>
         </div>
       </div>
