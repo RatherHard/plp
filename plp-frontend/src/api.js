@@ -6,6 +6,9 @@ const BASE_URL = 'http://localhost:' + PORT;
 
 // API端点配置
 export const API_ENDPOINTS = {
+  // 基础接口
+  base: `${BASE_URL}/api`,
+
   // 公共接口
   getRandom: `${BASE_URL}/api/random`,
   getKey: `${BASE_URL}/api/key`,

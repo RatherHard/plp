@@ -653,7 +653,7 @@ export default {
           headers['Authorization'] = 'Bearer ' + token
         }
         
-        const response = await fetch(`${API_ENDPOINTS.records}/comments/pending`, {
+        const response = await fetch(`${API_ENDPOINTS.base}/comments/pending`, {
           headers
         })
         
@@ -1127,17 +1127,21 @@ export default {
     
     // 组件挂载时获取内容列表
     onMounted(async () => {
-      // 检查token是否有效
-      const isTokenValid = await verifyToken()
-      if (isTokenValid) {
-        // token有效，获取内容列表
-        await fetchPendingContent()
-        await fetchApprovedContent()
-      } else {
-        // token无效，检查管理员密码是否已初始化
-        const isInit = await checkAdminInitialization()
-        if(isInit){
-          ElMessage.error('管理员Token已过期，请重新登录')
+      const token = localStorage.getItem('adminToken')
+      if (token) {
+        // 检查token是否有效
+        const isTokenValid = await verifyToken()
+        if (isTokenValid) {
+          // token有效，获取内容列表
+          await fetchPendingContent()
+          await fetchApprovedContent()
+        } else {
+          // token无效，检查管理员密码是否已初始化
+          const isInit = await checkAdminInitialization()
+          if(isInit){
+            ElMessage.error('管理员Token已过期，请重新登录')
+            window.location.reload()
+          }
         }
       }
     })
