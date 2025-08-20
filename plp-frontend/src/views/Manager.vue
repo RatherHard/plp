@@ -3,67 +3,38 @@
     <header class="manager-header">
       <h1>漂流瓶管理局</h1>
       <div class="header-actions">
-        <el-button type="primary" @click="showLoginDialog" v-if="!localStorage.getItem('adminToken')">管理员登录</el-button>
-        <el-button type="success" @click="showInitDialog" v-if="!localStorage.getItem('adminToken')">设置密钥</el-button>
-        <el-button type="danger" @click="handleLogout" v-else>退出登录</el-button>
+        <el-button type="danger" @click="handleLogout" v-if="localStorage.getItem('adminToken')">退出登录</el-button>
       </div>
     </header>
-    
-    <!-- 管理员登录弹窗 -->
-    <el-dialog
-      v-model="loginDialogVisible"
-      title="管理员登录"
-      width="400px"
-      :before-close="handleLoginDialogClose"
-    >
-      <el-form @submit.prevent="handleLogin">
-        <el-form-item label="密码">
-          <el-input
-            v-model="loginPassword"
-            type="password"
-            placeholder="请输入管理员密码"
-            show-password
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="loginDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleLogin">登录</el-button>
-        </span>
-      </template>
-    </el-dialog>
-    
-    <!-- 设置密钥弹窗 -->
-    <el-dialog
-      v-model="initDialogVisible"
-      title="设置密钥"
-      width="400px"
-      :before-close="handleInitDialogClose"
-    >
-      <el-form @submit.prevent="handleInit">
-        <el-form-item label="密码">
-          <el-input
-            v-model="initPassword"
-            type="password"
-            placeholder="请输入初始化密码"
-            show-password
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="initDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleInit">设置</el-button>
-        </span>
-      </template>
-    </el-dialog>
-    
+        
     <!-- 未登录提示 -->
     <div v-if="!localStorage.getItem('adminToken')" class="login-required">
-      <div class="login-prompt">
-        <h2>需要管理员权限</h2>
-        <p>请先登录管理员账户以访问审核后台</p>
+      <div class="login-form">
+        <h2>管理员登录</h2>
+        <p>请输入管理员密码以访问审核后台</p>
+        
+        <el-form @submit.prevent="handleLogin" class="login-form-content">
+          <el-form-item>
+            <el-input
+              v-model="loginPassword"
+              type="password"
+              placeholder="请输入管理员密码"
+              show-password
+              @keyup.enter="handleLogin"
+            />
+          </el-form-item>
+          
+          <el-form-item>
+            <el-button 
+              type="primary" 
+              @click="handleLogin"
+              :loading="loginLoading"
+              class="login-button"
+            >
+              登录
+            </el-button>
+          </el-form-item>
+        </el-form>
       </div>
     </div>
     
@@ -356,10 +327,16 @@ export default {
     const pendingList = ref([])
     const selectedItem = ref(null)
     const activeTab = ref('pending')
-    const loginDialogVisible = ref(false)
-    const initDialogVisible = ref(false)
+    const localStorage = window.localStorage
+    
+    // 表单数据
     const loginPassword = ref('')
     const initPassword = ref('')
+    const loginLoading = ref(false)  // 添加登录加载状态
+    
+    // 对话框显示控制
+    const loginDialogVisible = ref(false)
+    const initDialogVisible = ref(false)
     
     // 添加搜索关键字状态
     const searchKeyword = ref('')
@@ -415,6 +392,8 @@ export default {
       }
       
       try {
+        loginLoading.value = true  // 设置加载状态
+        
         const response = await fetch(API_ENDPOINTS.adminLogin, {
           method: 'POST',
           headers: {
@@ -441,6 +420,8 @@ export default {
       } catch (error) {
         console.error('登录时出错:', error)
         ElMessage.error('网络错误，登录失败')
+      } finally {
+        loginLoading.value = false  // 重置加载状态
       }
     }
     
@@ -1209,24 +1190,37 @@ export default {
   -webkit-backdrop-filter: blur(10px);
 }
 
-.login-prompt {
+.login-form {
   text-align: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  max-width: 400px;
+  width: 90%;
 }
 
-.login-prompt h2 {
-  color: white;
-  margin-bottom: 15px;
-  font-size: 28px;
+.login-form h2 {
+  margin: 0 0 10px 0;
+  color: #fff;
+  font-size: 24px;
 }
 
-.login-prompt p {
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 25px;
-  font-size: 16px;
+.login-form p {
+  margin: 0 0 20px 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.login-form-content {
+  text-align: left;
+}
+
+.login-button {
+  width: 100%;
+  margin-top: 10px;
 }
 
 .manager-main {
