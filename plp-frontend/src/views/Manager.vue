@@ -210,10 +210,10 @@
                 class="image-preview"
               >
                 <el-image
-                  :src="`http://localhost:5000/uploads/${filename}`"
+                  :src="`${API_ENDPOINTS.uploads}${filename}`"
                   fit="cover"
                   class="preview-image"
-                  :preview-src-list="selectedItem.filenames.map(name => `http://localhost:5000/uploads/${name}`)"
+                  :preview-src-list="selectedItem.filenames.map(name => `${API_ENDPOINTS.uploads}${name}`)"
                   :initial-index="index"
                   :preview-teleported="true"
                   :zoom-rate="1.2"
@@ -233,10 +233,10 @@
             <div class="info-value">
               <div class="image-preview">
                 <el-image
-                  :src="`http://localhost:5000/uploads/${selectedItem.filename}`"
+                  :src="`${API_ENDPOINTS.uploads}${selectedItem.filename}`"
                   fit="cover"
                   class="preview-image"
-                  :preview-src-list="[`http://localhost:5000/uploads/${selectedItem.filename}`]"
+                  :preview-src-list="[`${API_ENDPOINTS.uploads}${selectedItem.filename}`]"
                   :initial-index="0"
                   :preview-teleported="true"
                   :zoom-rate="1.2"
@@ -684,7 +684,7 @@ export default {
           headers['Authorization'] = 'Bearer ' + token
         }
         
-        const response = await fetch(`http://localhost:5000/api/records/${selectedItem.value.id}/review`, {
+        const response = await fetch(`${API_ENDPOINTS.records}/${selectedItem.value.id}/review`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -729,7 +729,7 @@ export default {
             headers['Authorization'] = 'Bearer ' + token;
           }
           
-          const approveResponse = await fetch(`http://localhost:5000/api/records/${selectedItem.value.id}/review`, {
+          const approveResponse = await fetch(`${API_ENDPOINTS.records}/${selectedItem.value.id}/review`, {
             method: 'POST',
             headers,
             body: JSON.stringify({
