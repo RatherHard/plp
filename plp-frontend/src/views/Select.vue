@@ -168,7 +168,7 @@ export default {
         
         // 将文本选项转换为数字编码并存储到共享状态
         // 载体: "平凡纸"记为0，"金刚纸"记为1
-        const carrierCode = selectedCarrier.value === '平凡纸' ? 0 : 1;
+        const carrierCode = selectedCarrier.value === '牛皮纸' ? 0 : 1;
         
         // 幻想类型: "空想"记为0，"联想"记为1
         const fantasyCode = selectedFantasy.value === '空想' ? 0 : 1;
