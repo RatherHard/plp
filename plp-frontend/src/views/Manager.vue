@@ -408,7 +408,6 @@ export default {
           const data = await response.json()
           // 将token保存到本地存储中
           localStorage.setItem('adminToken', data.token)
-          loginDialogVisible.value = false
           loginPassword.value = ''
           ElMessage.success('登录成功')
           // 登录成功后刷新页面
@@ -568,6 +567,36 @@ export default {
       }
     }
     
+    // 验证管理员token是否有效
+    const verifyToken = async () => {
+      const token = localStorage.getItem('adminToken')
+      if (!token) {
+        return false
+      }
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.verifyToken, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          return data.valid === true
+        } else {
+          // Token无效，清除本地存储
+          localStorage.removeItem('adminToken')
+          return false
+        }
+      } catch (error) {
+        console.error('验证token时出错:', error)
+        // 出错时也清除token
+        localStorage.removeItem('adminToken')
+        return false
+      }
+    }
+    
     // 检查管理员密码是否已初始化
     const checkAdminInitialization = async () => {
       try {
@@ -579,6 +608,9 @@ export default {
           if (!data.isInitialized) {
             // 如果未初始化，跳转到初始化页面
             router.push('/admin-init')
+          } else {
+            //已初始化
+            return true
           }
         } else {
           ElMessage.error('无法检查管理员状态')
@@ -1095,15 +1127,18 @@ export default {
     
     // 组件挂载时获取内容列表
     onMounted(async () => {
-      // 检查是否已登录
-      const token = localStorage.getItem('adminToken')
-      if (token) {
-        // 已登录，获取内容列表
+      // 检查token是否有效
+      const isTokenValid = await verifyToken()
+      if (isTokenValid) {
+        // token有效，获取内容列表
         await fetchPendingContent()
         await fetchApprovedContent()
       } else {
-        // 检查管理员密码是否已初始化
-        await checkAdminInitialization()
+        // token无效，检查管理员密码是否已初始化
+        const isInit = await checkAdminInitialization()
+        if(isInit){
+          ElMessage.error('管理员Token已过期，请重新登录')
+        }
       }
     })
     
