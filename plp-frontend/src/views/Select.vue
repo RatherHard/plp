@@ -167,7 +167,7 @@ export default {
         store.clearLocalStorage()
         
         // 将文本选项转换为数字编码并存储到共享状态
-        // 载体: "平凡纸"记为0，"金刚纸"记为1
+        // 载体: "牛皮纸"记为0，"永恒纸"记为1
         const carrierCode = selectedCarrier.value === '牛皮纸' ? 0 : 1;
         
         // 幻想类型: "空想"记为0，"联想"记为1
