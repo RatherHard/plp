@@ -1,10 +1,12 @@
 # 幻想漂流瓶
 
-一个前后端分离的匿名社交项目，用户可以通过"漂流瓶"的形式分享内容和心情，并与其他用户互动。
-
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D14.x-brightgreen.svg)
 ![Vue.js](https://img.shields.io/badge/vue-3.x-brightgreen.svg)
+
+## 项目实际部署
+
+[点此体验](https://plp.home.cszj.wang:5208/)
 
 ## 项目简介
 
