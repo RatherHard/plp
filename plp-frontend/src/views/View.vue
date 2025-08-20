@@ -257,7 +257,7 @@ export default {
       // 如果没有存续时间信息，显示默认标签
       if (exist === null || exist === undefined) {
         return {
-          text: '无暇的漂流瓶',
+          text: '无瑕的漂流瓶',
           type: 'primary'
         }
       }
@@ -265,7 +265,7 @@ export default {
       // 根据存续时间返回对应的标签文本和类型
       if (exist <= 7) {
         return {
-          text: '无暇的漂流瓶',
+          text: '无瑕的漂流瓶',
           type: 'primary'
         }
       } else if (exist <= 30) {
