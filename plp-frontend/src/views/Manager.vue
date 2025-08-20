@@ -121,107 +121,100 @@
         </div>
         
         <div class="detail-info" v-if="activeTab !== 'comments'">
-          <div class="info-row">
-            <span class="info-label">ID:</span>
-            <span class="info-value">{{ selectedItem.id }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">标题:</span>
-            <span class="info-value">{{ selectedItem.title || '无标题' }}</span>
-          </div>
-          <div class="info-row" v-if="selectedItem.originalTitle !== undefined">
-            <span class="info-label">原标题:</span>
-            <span class="info-value">{{ selectedItem.originalTitle || '无标题' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">上传时间:</span>
-            <span class="info-value">{{ selectedItem.uploadTime }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">内容:</span>
-            <span class="info-value content-text">{{ selectedItem.text }}</span>
-          </div>
-          <div class="info-row" v-if="selectedItem.originalText !== undefined">
-            <span class="info-label">原文:</span>
-            <span class="info-value content-text">{{ selectedItem.originalText }}</span>
-          </div>
-          <div class="info-row" v-if="selectedItem.images && selectedItem.images.length > 0">
-            <span class="info-label">图片:</span>
-            <div class="info-value">
-              <div 
-                v-for="(image, index) in processImages(selectedItem.images)" 
-                :key="index"
-                class="image-preview"
-              >
-                <el-image
-                  :src="image"
-                  fit="cover"
-                  class="preview-image"
-                  :preview-src-list="processImages(selectedItem.images)"
-                  :initial-index="index"
-                  :preview-teleported="true"
-                  :zoom-rate="1.2"
+          <el-descriptions :column="1" border>
+            <el-descriptions-item label="ID" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Document /></el-icon>
+                  ID
+                </div>
+              </template>
+              {{ selectedItem.id }}
+            </el-descriptions-item>
+            
+            <el-descriptions-item label="标题" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Document /></el-icon>
+                  标题
+                </div>
+              </template>
+              {{ selectedItem.title || '无标题' }}
+            </el-descriptions-item>
+            
+            <el-descriptions-item v-if="selectedItem.originalTitle !== undefined" label="原标题" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Edit /></el-icon>
+                  原标题
+                </div>
+              </template>
+              {{ selectedItem.originalTitle || '无标题' }}
+            </el-descriptions-item>
+            
+            <el-descriptions-item label="上传时间" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Clock /></el-icon>
+                  上传时间
+                </div>
+              </template>
+              {{ selectedItem.uploadTime }}
+            </el-descriptions-item>
+            
+            <el-descriptions-item label="内容" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><ChatLineSquare /></el-icon>
+                  内容
+                </div>
+              </template>
+              <div class="content-text">{{ selectedItem.text }}</div>
+            </el-descriptions-item>
+            
+            <el-descriptions-item v-if="selectedItem.originalText !== undefined" label="原文" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Edit /></el-icon>
+                  原文
+                </div>
+              </template>
+              <div class="content-text">{{ selectedItem.originalText }}</div>
+            </el-descriptions-item>
+            
+            <el-descriptions-item v-if="selectedItem.filenames && selectedItem.filenames.length > 0" label="图片" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Picture /></el-icon>
+                  图片
+                </div>
+              </template>
+              <div class="info-value">
+                <div 
+                  v-for="(filename, index) in selectedItem.filenames" 
+                  :key="index"
+                  class="image-preview"
                 >
-                  <template #placeholder>
-                    <div class="image-loading">加载中...</div>
-                  </template>
-                  <template #error>
-                    <div class="image-error">图片加载失败</div>
-                  </template>
-                </el-image>
+                  <el-image
+                    :src="completeImage(filename)"
+                    fit="cover"
+                    class="preview-image"
+                    :preview-src-list="[completeImage(filename)]"
+                    :initial-index="index"
+                    :preview-teleported="true"
+                    :zoom-rate="1.2"
+                  >
+                    <template #placeholder>
+                      <div class="image-loading">加载中...</div>
+                    </template>
+                    <template #error>
+                      <div class="image-error">图片加载失败</div>
+                    </template>
+                  </el-image>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="info-row" v-else-if="selectedItem.filenames && selectedItem.filenames.length > 0">
-            <span class="info-label">图片:</span>
-            <div class="info-value">
-              <div 
-                v-for="(filename, index) in selectedItem.filenames" 
-                :key="index"
-                class="image-preview"
-              >
-                <el-image
-                  :src="`${API_ENDPOINTS.uploads}${filename}`"
-                  fit="cover"
-                  class="preview-image"
-                  :preview-src-list="selectedItem.filenames.map(name => `${API_ENDPOINTS.uploads}${name}`)"
-                  :initial-index="index"
-                  :preview-teleported="true"
-                  :zoom-rate="1.2"
-                >
-                  <template #placeholder>
-                    <div class="image-loading">加载中...</div>
-                  </template>
-                  <template #error>
-                    <div class="image-error">图片加载失败</div>
-                  </template>
-                </el-image>
-              </div>
-            </div>
-          </div>
-          <div class="info-row" v-else-if="selectedItem.filename">
-            <span class="info-label">图片:</span>
-            <div class="info-value">
-              <div class="image-preview">
-                <el-image
-                  :src="`${API_ENDPOINTS.uploads}${selectedItem.filename}`"
-                  fit="cover"
-                  class="preview-image"
-                  :preview-src-list="[`${API_ENDPOINTS.uploads}${selectedItem.filename}`]"
-                  :initial-index="0"
-                  :preview-teleported="true"
-                  :zoom-rate="1.2"
-                >
-                  <template #placeholder>
-                    <div class="image-loading">加载中...</div>
-                  </template>
-                  <template #error>
-                    <div class="image-error">图片加载失败</div>
-                  </template>
-                </el-image>
-              </div>
-            </div>
-          </div>
+            </el-descriptions-item>
+          </el-descriptions>
         </div>
         
         <!-- 已审核帖子的评论区域 -->
@@ -280,22 +273,47 @@
         </div>
         
         <div class="detail-info" v-else-if="activeTab === 'comments'">
-          <div class="info-row">
-            <span class="info-label">评论ID:</span>
-            <span class="info-value">{{ selectedItem.id }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">帖子ID:</span>
-            <span class="info-value">{{ selectedItem.recordId }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">评论内容:</span>
-            <span class="info-value content-text">{{ selectedItem.content || selectedItem.text }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">评论时间:</span>
-            <span class="info-value">{{ selectedItem.commentTime }}</span>
-          </div>
+          <el-descriptions :column="1" border>
+            <el-descriptions-item label="评论ID" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Document /></el-icon>
+                  评论ID
+                </div>
+              </template>
+              {{ selectedItem.id }}
+            </el-descriptions-item>
+            
+            <el-descriptions-item label="帖子ID" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Document /></el-icon>
+                  帖子ID
+                </div>
+              </template>
+              {{ selectedItem.recordId }}
+            </el-descriptions-item>
+            
+            <el-descriptions-item label="评论内容" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><ChatLineSquare /></el-icon>
+                  评论内容
+                </div>
+              </template>
+              <div class="content-text">{{ selectedItem.content || selectedItem.text }}</div>
+            </el-descriptions-item>
+            
+            <el-descriptions-item label="评论时间" :label-class-name="'desc-label'">
+              <template #label>
+                <div class="desc-label">
+                  <el-icon><Clock /></el-icon>
+                  评论时间
+                </div>
+              </template>
+              {{ selectedItem.commentTime }}
+            </el-descriptions-item>
+          </el-descriptions>
         </div>
       </div>
       
@@ -311,16 +329,23 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Document, Picture, Clock, ChatLineSquare, User, Edit } from '@element-plus/icons-vue'
 import { API_ENDPOINTS } from '../api'
 import { useRouter } from 'vue-router'
 
 export default {
   name: 'Manager',
   components: {
-    Search
+    Search,
+    Document,
+    Picture,
+    Clock,
+    ChatLineSquare,
+    User,
+    Edit
   },
   setup() {
+    console.log(API_ENDPOINTS)
     const router = useRouter()
     
     const approvedList = ref([])
@@ -531,8 +556,15 @@ export default {
           return image
         }
         // 如果是文件名，构建完整URL
-        return `${API_ENDPOINTS.uploads}/${image}`
+        return `${API_ENDPOINTS.uploads}${image}`
       })
+    }
+
+    const completeImage = (image) => {
+      if (image.startsWith('http')) {
+        return image
+      }
+      return `${API_ENDPOINTS.uploads}${image}`
     }
     
     // 获取待审核内容列表
@@ -1181,7 +1213,8 @@ export default {
       commentSearchKeyword, // 添加评论搜索关键字状态
       filteredApprovedComments, // 添加过滤已审核评论的计算属性
       pendingCommentsList, // 暴露待审核评论列表
-      approvedCommentsList // 暴露已审核评论列表
+      approvedCommentsList, // 暴露已审核评论列表
+      completeImage
     }
   }
 }
@@ -1422,36 +1455,27 @@ export default {
   gap: 10px;
 }
 
-.detail-info {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.info-row {
+.desc-label {
   display: flex;
-  margin-bottom: 15px;
+  align-items: center;
+  gap: 5px;
 }
 
-.info-row:last-child {
-  margin-bottom: 0;
-}
-
-.info-label {
-  width: 80px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.9);
-  flex-shrink: 0;
-}
-
-.info-value {
-  flex: 1;
-  color: white;
+.desc-label .el-icon {
+  font-size: 16px;
 }
 
 .content-text {
   white-space: pre-wrap;
   line-height: 1.6;
+  padding: 10px 0;
+}
+
+/* 保持原有的样式 */
+.detail-info {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .image-preview {
