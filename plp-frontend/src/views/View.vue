@@ -627,12 +627,12 @@ export default {
           } else if (data.filenames && Array.isArray(data.filenames)) {
             // 如果有filenames数组，则为每个文件名构建图片URL
             const imageUrls = data.filenames.map(filename => 
-              `http://localhost:5000/uploads/${filename}`
+              `${API_ENDPOINTS.uploads}${filename}`
             )
             store.updateImages(imageUrls)
           } else if (data.filename) {
             // 如果有filename字段，则构建图片URL
-            const imageUrl = `http://localhost:5000/uploads/${data.filename}`
+            const imageUrl = `${API_ENDPOINTS.uploads}${data.filename}`
             store.updateImages([imageUrl])
           } else {
             // 如果没有图片数据，确保清空图片列表
