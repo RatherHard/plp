@@ -1,7 +1,11 @@
 <template>
   <header class="header">
     <div class="header-content">
-      <h1 class="site-title">幻想漂流瓶</h1>
+      <h1 
+        @click="goHome"
+        class="site-title">
+        幻想漂流瓶
+      </h1>
       <el-button 
         type="info" 
         icon="InfoFilled" 
