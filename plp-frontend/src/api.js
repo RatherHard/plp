@@ -1,6 +1,6 @@
 // 基础URL配置，可以从环境变量中获取，如果没有则使用默认值
-const PORT = 3001;
-const BASE_URL = 'http://localhost:' + PORT;
+const PORT = 5208;
+const BASE_URL = 'https://plp-bak.home.cszj.wang:' + PORT;
 
 // API端点配置
 export const API_ENDPOINTS = {

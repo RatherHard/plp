@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     // 获取客户端IP地址
-    const clientIP = req.connection.remoteAddress || req.socket.remoteAddress || 
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
                   (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
                   (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown');
     
@@ -47,6 +47,8 @@ const uploadToMemory = multer({ storage: memoryStorage });
 const uploadToDisk = multer({ storage: storage });
 
 const app = express();
+// 启用trust proxy以支持反向代理后获取真实IP
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 3001;
 
 // JWT密钥
@@ -346,7 +348,7 @@ app.post('/api/admin/login', async (req, res) => {
 app.get('/api/key', async (req, res) => {
   try {
     // 获取客户端IP地址
-    const clientIP = req.connection.remoteAddress || req.socket.remoteAddress || 
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
                     (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
                     (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown');
     
@@ -487,7 +489,7 @@ app.post('/api/upload', uploadToMemory.array('images', 10), async (req, res) => 
     const imageCount = req.files ? req.files.length : 0; // 根据实际上传的图片数量生成fantasy值
 
     // 获取客户端IP地址和User-Agent
-    const clientIP = req.connection.remoteAddress || req.socket.remoteAddress || 
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
                     (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
                     (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown');
     const userAgent = req.get('User-Agent') || 'unknown';
@@ -928,7 +930,7 @@ app.put('/api/records/:id', uploadToMemory.array('images', 10), async (req, res)
     const { text, title } = req.body; // 获取标题
 
     // 获取客户端IP地址
-    const clientIP = req.connection.remoteAddress || req.socket.remoteAddress || 
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
                     (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
                     (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown');
 
@@ -1154,7 +1156,7 @@ app.post('/api/records/:id/comments', async (req, res) => {
     // 创建评论对象
     const comment = {
       content: content.trim(),
-      commenterIP: req.connection.remoteAddress || req.socket.remoteAddress || 
+      commenterIP: req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
                   (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
                   (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown'),
       commentTime: new Date().toISOString()
