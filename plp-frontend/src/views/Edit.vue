@@ -1,5 +1,5 @@
 <template>
-  <div class="view-container">
+  <div class="edit-container">
     <HeaderComponent/>
     
     <VideoBackground />
@@ -8,15 +8,23 @@
       <div class="content-layout">
         <el-row :gutter="20">
           <el-col :span="24">
-            <div class="content-display">
-              <div class="content-text">
-                <div class="content-tags">
-                  <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
-                  <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
+            <el-card class="content-card">
+              <template #header>
+                <div class="card-header">
+                  <h2>编辑漂流瓶</h2>
+                  <div class="content-tags">
+                    <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
+                    <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
+                  </div>
                 </div>
-                
+              </template>
+              
+              <div class="content-text">
                 <div class="editor-section">
-                  <div class="input-label">标题</div>
+                  <div class="input-label">
+                    <el-icon><Document /></el-icon>
+                    标题
+                  </div>
                   <el-input
                     v-model="displayTitle"
                     placeholder="请输入标题（不超过20字）"
@@ -27,7 +35,10 @@
                 </div>
                 
                 <div class="editor-section">
-                  <div class="input-label">正文</div>
+                  <div class="input-label">
+                    <el-icon><Document /></el-icon>
+                    正文
+                  </div>
                   <el-input
                     v-model="content.text"
                     type="textarea"
@@ -41,7 +52,10 @@
               </div>
               
               <div class="image-upload-section" v-if="showImageUpload">
-                <h3>上传图片</h3>
+                <div class="input-label">
+                  <el-icon><Picture /></el-icon>
+                  上传图片
+                </div>
                 <el-upload
                   class="image-uploader"
                   action=""
@@ -76,14 +90,20 @@
               </div>
               
               <div class="editor-actions">
-                <el-button type="primary" @click="saveContent">保存</el-button>
-                <el-button type="danger" @click="showCancelDialog">放弃</el-button>
+                <el-button type="primary" @click="saveContent">
+                  <el-icon><Check /></el-icon>
+                  保存
+                </el-button>
+                <el-button type="danger" @click="showCancelDialog">
+                  <el-icon><Close /></el-icon>
+                  放弃
+                </el-button>
               </div>
-            </div>
+            </el-card>
           </el-col>
         </el-row>
       </div>
-      
+   
       <!-- 放弃编辑确认弹窗 -->
       <el-dialog
         v-model="cancelDialogVisible"
@@ -108,7 +128,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, Close } from '@element-plus/icons-vue'
+import { Plus, Close, Document, Edit, Picture, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
@@ -121,7 +141,12 @@ export default {
     HeaderComponent,
     FooterComponent,
     VideoBackground,
-    Plus
+    Plus,
+    Close,
+    Document,
+    Edit,
+    Picture,
+    Check
   },
   setup() {
     const router = useRouter()
@@ -471,52 +496,10 @@ export default {
 </script>
 
 <style scoped>
-.view-container {
+.edit-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
   overflow-x: hidden;
-}
-
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.video-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.background-video {
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-  opacity: 0.8;
-}
-
-.fallback-background {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .main-content {
@@ -530,11 +513,49 @@ export default {
 .content-layout {
   max-width: 1200px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
-  padding: 20px;
   margin-bottom: 20px;
+}
+
+.content-card {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.content-card :deep(.el-card__header) {
+  border-bottom: 1px solid #ebeef5;
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.content-tags {
+  display: flex;
+  gap: 10px;
+}
+
+.content-tags .tag {
+  margin-right: 0;
+}
+
+.content-text {
+  padding: 20px;
 }
 
 .content-text h2 {
@@ -542,27 +563,18 @@ export default {
   color: #333;
 }
 
-.title-input {
-  margin-bottom: 20px;
-}
-
-.title-input :deep(.el-input__inner) {
-  font-size: 24px;
-  font-weight: bold;
-  padding: 15px;
-  text-align: center;
-}
-
-.content-tags {
-  margin-bottom: 20px;
-}
-
-.content-tags .tag {
-  margin-right: 10px;
-}
-
 .editor-section {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+}
+
+.input-label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .text-editor {
@@ -570,43 +582,28 @@ export default {
 }
 
 .image-upload-section {
-  margin: 15px 0;
+  margin: 15px 0 30px;
+  padding: 0 20px;
 }
 
 .image-uploader {
   width: 100%;
 }
 
-.images-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
-
 .editor-actions {
   display: flex;
   justify-content: center;
-  gap: 60px;
-  padding: 50px;
+  gap: 40px;
+  padding: 30px;
 }
 
 .editor-actions :deep(.el-button) {
-  font-size: 18px;
-  padding: 20px 40px;
-  border-radius: 10px;
-}
-
-.editor-actions .el-button:first-child {
-  background-color: #409eff;
-  border-color: #409eff;
-  color: white;
-}
-
-.editor-actions .el-button:last-child {
-  background-color: #f56c6c;
-  border-color: #f56c6c;
-  color: white;
+  font-size: 16px;
+  padding: 12px 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .dialog-footer {
@@ -659,13 +656,6 @@ export default {
 .close-button .el-icon {
   font-size: 20px;
   color: #666;
-}
-
-.input-label {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #333;
 }
 
 .title-editor {

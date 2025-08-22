@@ -671,7 +671,8 @@ export default {
 
 .main-content {
   position: relative;
-  height: 100%;
+  top: 51px;
+  height: calc(100vh - 100px);
   padding: 80px 20px 50px;
   overflow-y: auto;
 }
