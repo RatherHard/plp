@@ -6,10 +6,17 @@
       autoplay 
       loop 
       muted
-      v-if="videoSrc"
+      v-if="videoSrc && !fallback"
+      @error="handleVideoError"
     ></video>
     <div v-if="fallback" class="fallback-background">
-      <img src="/videos/fallback-frame.png" alt="Fallback Background">
+      <img 
+        src="/videos/fallback-frame.png" 
+        alt="Fallback Background"
+        @error="handleImageError"
+        v-if="!imageError"
+      >
+      <div class="gradient-background" v-else></div>
     </div>
   </div>
 </template>
@@ -36,22 +43,36 @@ export default {
   setup(props) {
     let videoSrc = ref('')
     const fallback = ref(false)
+    const imageError = ref(false)
     
     onMounted(async () => {
       try {
         // 检查视频文件是否存在
-        const response = await fetch(props.videoPath, { method: 'GET' })
+        const response = await fetch(props.videoPath, { method: 'HEAD' })
         if (response.ok) {
           videoSrc.value = props.videoPath
+        } else {
+          fallback.value = true
         }
       } catch (e) {
         fallback.value = true
       }
     })
     
+    const handleVideoError = () => {
+      fallback.value = true
+    }
+    
+    const handleImageError = () => {
+      imageError.value = true
+    }
+    
     return {
       videoSrc,
-      fallback
+      fallback,
+      imageError,
+      handleVideoError,
+      handleImageError
     }
   }
 }
@@ -83,12 +104,31 @@ export default {
 .fallback-background {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #66bcea 0%, #122aff 100%);
 }
 
 .fallback-background img { 
   object-fit: cover;
   width: 100%;
   height: 100%;
+}
+
+.gradient-background {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #66bcea 0%, #122aff 100%);
+}
+
+.gradient-background::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
 }
 </style>
