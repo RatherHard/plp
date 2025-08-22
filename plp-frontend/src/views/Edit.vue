@@ -1,6 +1,6 @@
 <template>
   <div class="view-container">
-    <HeaderComponent @show-instructions="showInstructions" />
+    <HeaderComponent/>
     
     <VideoBackground />
     
@@ -129,9 +129,6 @@ export default {
     const previewDialogVisible = ref(false)
     const previewImageUrl = ref('')
     const cancelDialogVisible = ref(false)
-    
-    // 获取网站说明文本
-    const instructionsText = computed(() => store.getInstructionsText())
     
     // 计算载体标签显示内容
     const carrierTag = computed(() => {
@@ -463,8 +460,6 @@ export default {
       previewDialogVisible,
       previewImageUrl,
       cancelDialogVisible,
-      showInstructions,
-      instructionsText,
       carrierTag,
       fantasyTag,
       showImageUpload,
