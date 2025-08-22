@@ -2,17 +2,7 @@
   <div class="select-edit-container">
     <HeaderComponent @show-instructions="showInstructions" />
     
-    <div class="video-background">
-      <video 
-        class="background-video" 
-        :src="videoSource" 
-        autoplay 
-        loop 
-        muted
-        v-if="videoSource"
-      ></video>
-      <div v-else class="fallback-background"></div>
-    </div>
+    <VideoBackground />
     
     <main class="main-content">
       <div class="content-layout">
@@ -266,6 +256,7 @@ import { Plus, Close, ArrowRight, ArrowLeft, Check, Document, Lightning, Picture
 import { ElMessage, ElMessageBox, ElSteps, ElStep } from 'element-plus'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
+import VideoBackground from '../components/VideoBackground.vue'
 import store from '../store'
 
 export default {
@@ -273,6 +264,7 @@ export default {
   components: {
     HeaderComponent,
     FooterComponent,
+    VideoBackground,
     Plus,
     Close,
     ArrowRight,
@@ -295,26 +287,6 @@ export default {
     
     // 获取网站说明文本
     const instructionsText = computed(() => store.getInstructionsText())
-    
-    // 检查视频文件是否存在，如果不存在则使用默认颜色背景
-    const videoSource = ref('')
-    onMounted(() => {
-      try {
-        fetch('/videos/Main.mp4')
-          .then(response => {
-            if (response.ok) {
-              videoSource.value = '/videos/Main.mp4'
-            } else {
-              videoSource.value = ''
-            }
-          })
-          .catch(() => {
-            videoSource.value = ''
-          })
-      } catch (e) {
-        videoSource.value = ''
-      }
-    })
     
     // 用户选择状态
     const selectedCarrier = ref('') // 载体选择
@@ -614,7 +586,6 @@ export default {
     
     return {
       activeStep,
-      videoSource,
       selectedCarrier,
       selectedFantasy,
       content,

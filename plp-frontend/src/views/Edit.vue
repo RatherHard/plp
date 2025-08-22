@@ -2,17 +2,7 @@
   <div class="view-container">
     <HeaderComponent @show-instructions="showInstructions" />
     
-    <div class="video-background">
-      <video 
-        v-if="videoSource"
-        class="background-video" 
-        :src="videoSource" 
-        autoplay 
-        loop 
-        muted
-      ></video>
-      <div v-else class="fallback-background"></div>
-    </div>
+    <VideoBackground />
     
     <main class="main-content">
       <div class="content-layout">
@@ -139,6 +129,7 @@ import { Plus, Close } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
+import VideoBackground from '../components/VideoBackground.vue'
 import store from '../store'
 
 export default {
@@ -146,6 +137,7 @@ export default {
   components: {
     HeaderComponent,
     FooterComponent,
+    VideoBackground,
     Plus
   },
   setup() {
@@ -253,7 +245,6 @@ export default {
     })
     
     const fileList = ref([])
-    const videoSource = ref('')
     
     // 初始化文件列表
     onMounted(() => {
@@ -291,20 +282,6 @@ export default {
         }))
       } else {
         fileList.value = []
-      }
-      
-      try {
-        fetch('/videos/Mai.mp4')
-          .then(response => {
-            if (response.ok) {
-              videoSource.value = '/videos/Mai.mp4'
-            }
-          })
-          .catch(() => {
-            videoSource.value = ''
-          })
-      } catch (e) {
-        videoSource.value = ''
       }
     })
     
@@ -492,7 +469,6 @@ export default {
       content,
       displayTitle,
       fileList,
-      videoSource,
       handleFileChange,
       handleFileRemove,
       handlePreview,

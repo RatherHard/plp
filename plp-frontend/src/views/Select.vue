@@ -2,16 +2,7 @@
   <div class="select-container">
     <HeaderComponent @show-instructions="showInstructions" />
     
-    <div class="video-background">
-      <video 
-        class="background-video" 
-        :src="videoSource" 
-        autoplay 
-        loop 
-        muted
-        v-if="videoSource"
-      ></video>
-    </div>
+    <VideoBackground />
     
     <main class="main-content">
       <div class="selection-container">
@@ -102,6 +93,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
+import VideoBackground from '../components/VideoBackground.vue'
 import { ElButton, ElRadioGroup, ElRadio, ElDialog, ElMessage } from 'element-plus'
 import store from '../store'
 
@@ -110,6 +102,7 @@ export default {
   components: {
     HeaderComponent,
     FooterComponent,
+    VideoBackground,
     ElButton,
     ElRadioGroup,
     ElRadio,
@@ -125,25 +118,6 @@ export default {
     // 获取网站说明文本
     const instructionsText = computed(() => store.getInstructionsText())
     
-    // 检查视频文件是否存在，如果不存在则使用默认颜色背景
-    const videoSource = ref('')
-    onMounted(() => {
-      try {
-        fetch('/videos/Main.mp4')
-          .then(response => {
-            if (response.ok) {
-              videoSource.value = '/videos/Main.mp4'
-            } else {
-              videoSource.value = ''
-            }
-          })
-          .catch(() => {
-            videoSource.value = ''
-          })
-      } catch (e) {
-        videoSource.value = ''
-      }
-    })
     
     // 用户选择状态
     const selectedCarrier = ref('') // 载体选择
@@ -188,7 +162,6 @@ export default {
     }
     
     return {
-      videoSource,
       selectedCarrier,
       selectedFantasy,
       confirmSelection,

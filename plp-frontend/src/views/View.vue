@@ -1,17 +1,8 @@
 <template>
   <div class="view-container">
-    <HeaderComponent @show-instructions="showInstructions" />
+    <HeaderComponent @show-instructions="showInstructions" @go-home="goHome" />
     
-    <div class="video-background">
-      <video 
-        class="background-video" 
-        :src="videoSource" 
-        autoplay 
-        loop 
-        muted
-        v-if="videoSource"
-      ></video>
-    </div>
+    <VideoBackground />
     
     <main class="main-content">
       <div class="content-layout">
@@ -195,12 +186,15 @@ import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
 import store from '../store'
 import { API_ENDPOINTS } from '../api'
+import VideoBackground from '../components/VideoBackground.vue'
+
 
 export default {
   name: 'View',
   components: {
     HeaderComponent,
     FooterComponent,
+    VideoBackground,
     Document,
     Picture,
     Loading,
@@ -266,23 +260,6 @@ export default {
     const instructionsText = computed(() => store.getInstructionsText())
 
     // 检查视频文件是否存在，如果不存在则使用默认颜色背景
-    const videoSource = ref('')
-    try {
-      fetch('/videos/Mai.mp4')
-        .then(response => {
-          if (response.ok) {
-            videoSource.value = '/videos/Mai.mp4'
-          } else {
-            videoSource.value = ''
-          }
-        })
-        .catch(() => {
-          videoSource.value = ''
-        })
-    } catch (e) {
-      videoSource.value = ''
-    }
-    
     // 根据存储的参数计算显示标签
     const carrierTag = computed(() => {
       // 从共享状态获取载体信息，如果不存在则默认为平凡纸(0)
@@ -864,7 +841,6 @@ export default {
     }
     
     return {
-      videoSource,
       content,
       images,
       store,

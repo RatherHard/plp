@@ -116,7 +116,6 @@ export default {
     const successDialogVisible = ref(false)
     const errorDialogVisible = ref(false)
     const errorMessage = ref('')
-    const videoSource = ref('')
     
     // 表单数据
     const initForm = reactive({
@@ -213,23 +212,7 @@ export default {
     const showInstructions = () => {
       // 可以添加说明逻辑
     }
-    
-    // 设置背景视频
-    const setVideoBackground = () => {
-      const videos = [
-        '/videos/001.mp4',
-        '/videos/002.mp4',
-        '/videos/003.mp4',
-        '/videos/004.mp4',
-        '/videos/005.mp4',
-        '/videos/006.mp4',
-        '/videos/007.mp4',
-        '/videos/008.mp4'
-      ]
-      const randomVideo = videos[Math.floor(Math.random() * videos.length)]
-      videoSource.value = randomVideo
-    }
-    
+        
     onMounted(() => {
       checkInitialization()
       setVideoBackground()
@@ -243,7 +226,6 @@ export default {
       successDialogVisible,
       errorDialogVisible,
       errorMessage,
-      videoSource,
       handleInit,
       goToManager,
       showInstructions
