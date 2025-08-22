@@ -17,19 +17,30 @@
       <div class="content-layout">
         <el-row :gutter="20">
           <el-col :span="24">
-            <div class="content-display">
+            <el-card class="content-card">
+              <template #header>
+                <div class="card-header">
+                  <div class="header-content">
+                    <h2 class="content-title">{{ store.getDisplayTitle() }}</h2>
+                    <div class="content-meta" v-if="store.getSource() !== 0">
+                      <span class="bottle-id">
+                        <el-icon><Document /></el-icon>
+                        ID: {{ content.id }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="content-tags">
+                    <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
+                    <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
+                    <el-tag class="tag" :type="existTag.type">{{ existTag.text }}</el-tag>
+                  </div>
+                </div>
+              </template>
+              
               <div class="content-text">
-                <h2>{{ store.getDisplayTitle() }}</h2>
-                <div class="content-meta" v-if="store.getSource() !== 0">
-                  <span class="bottle-id">ID: {{ content.id }}</span>
-                </div>
-                <div class="content-tags">
-                  <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
-                  <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
-                  <el-tag class="tag" :type="existTag.type">{{ existTag.text }}</el-tag>
-                </div>
                 <p v-for="(paragraph, index) in content.text.split('\n')" :key="index">{{ paragraph }}</p>
               </div>
+              
               <div class="content-images" v-if="showImages">
                 <div v-if="images && images.length > 0" class="images-container">
                   <el-image
@@ -50,69 +61,99 @@
                   >
                     <template #placeholder>
                       <div class="image-loading">
-                        <i class="el-icon-loading"></i> 加载中... {{ imageLoadStatus && imageLoadStatus[index] ? (imageLoadStatus[index].progress || 0) : 0 }}%
+                        <el-icon><Loading /></el-icon>
+                        <span>加载中... {{ imageLoadStatus && imageLoadStatus[index] ? (imageLoadStatus[index].progress || 0) : 0 }}%</span>
                       </div>
                     </template>
                     <template #error>
                       <div class="image-error">
-                        <i class="el-icon-picture-outline-round"></i>
-                        图片加载失败
-                        <el-button @click="retryImageLoad(index)" size="small">重试</el-button>
+                        <el-icon><Picture /></el-icon>
+                        <span>图片加载失败</span>
+                        <el-button @click="retryImageLoad(index)" size="small" type="primary">重试</el-button>
                       </div>
                     </template>
                   </el-image>
                 </div>
-                <div v-else class="empty-content">暂无图片</div>
+                <div v-else class="empty-content">
+                  <el-icon><Picture /></el-icon>
+                  <span>暂无图片</span>
+                </div>
               </div>
-            </div>
+            </el-card>
           </el-col>
         </el-row>
       </div>
       
       <div class="action-buttons">
-        <el-button type="primary" @click="goToEdit" v-if="store.getSource() === 0 || carrierTag.text !== '永恒纸'">补充</el-button>
-        <el-button type="success" @click="throwBottle">扔出</el-button>
-        <el-button type="info" @click="toggleComments" v-if="store.getSource() !== 0">回应</el-button>
+        <el-button type="primary" @click="goToEdit" v-if="store.getSource() === 0 || carrierTag.text !== '永恒纸'">
+          <el-icon><Edit /></el-icon>
+          补充
+        </el-button>
+        <el-button type="success" @click="throwBottle">
+          <el-icon><Position /></el-icon>
+          扔出
+        </el-button>
+        <el-button type="info" @click="toggleComments" v-if="store.getSource() !== 0">
+          <el-icon><ChatLineSquare /></el-icon>
+          回应
+        </el-button>
       </div>
       
       <!-- 回应区 -->
       <div class="comments-section" v-if="showComments">
-        <div class="comments-header">
-          <h3>回应区</h3>
-        </div>
-        
-        <!-- 回应列表 -->
-        <div class="comments-list">
-          <div v-for="(comment, index) in comments" :key="index" class="comment-item">
-            <div class="comment-content">
-              <div class="comment-header" v-if="comment.id">
-                <span class="comment-id">ID: {{ comment.id }}</span>
-              </div>
-              <p>{{ comment.text }}</p>
-              <div class="comment-meta">
-                <span class="comment-time">{{ comment.time }}</span>
+        <el-card class="comments-card">
+          <template #header>
+            <div class="comments-header">
+              <h3>
+                <el-icon><ChatLineSquare /></el-icon>
+                回应区
+              </h3>
+            </div>
+          </template>
+          
+          <!-- 回应列表 -->
+          <div class="comments-list">
+            <div v-for="(comment, index) in comments" :key="index" class="comment-item">
+              <div class="comment-content">
+                <div class="comment-header" v-if="comment.id">
+                  <span class="comment-id">
+                    <el-icon><ChatLineSquare /></el-icon>
+                    ID: {{ comment.id }}
+                  </span>
+                </div>
+                <p>{{ comment.text }}</p>
+                <div class="comment-meta">
+                  <span class="comment-time">
+                    <el-icon><Clock /></el-icon>
+                    {{ comment.time }}
+                  </span>
+                </div>
               </div>
             </div>
+            <div v-if="comments.length === 0" class="no-comments">
+              <el-icon><ChatLineSquare /></el-icon>
+              <span>暂无回应，快来发表第一条回应吧！</span>
+            </div>
           </div>
-          <div v-if="comments.length === 0" class="no-comments">
-            暂无回应，快来发表第一条回应吧！
+          
+          <!-- 发表回应 -->
+          <div class="comment-form">
+            <el-input
+              type="textarea"
+              v-model="newComment"
+              placeholder="请输入您的回应..."
+              :rows="3"
+              maxlength="500"
+              show-word-limit
+            ></el-input>
+            <div class="comment-actions">
+              <el-button type="primary" @click="addComment" :disabled="!newComment.trim()">
+                <el-icon><Promotion /></el-icon>
+                发表回应
+              </el-button>
+            </div>
           </div>
-        </div>
-        
-        <!-- 发表回应 -->
-        <div class="comment-form">
-          <el-input
-            type="textarea"
-            v-model="newComment"
-            placeholder="请输入您的回应..."
-            :rows="3"
-            maxlength="500"
-            show-word-limit
-          ></el-input>
-          <div class="comment-actions">
-            <el-button type="primary" @click="addComment" :disabled="!newComment.trim()">发表回应</el-button>
-          </div>
-        </div>
+        </el-card>
       </div>
     </main>
     
@@ -140,6 +181,16 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { 
+  Document, 
+  Picture, 
+  Loading, 
+  Edit, 
+  Position, 
+  ChatLineSquare, 
+  Clock,
+  Promotion
+} from '@element-plus/icons-vue'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
 import store from '../store'
@@ -149,7 +200,15 @@ export default {
   name: 'View',
   components: {
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    Document,
+    Picture,
+    Loading,
+    Edit,
+    Position,
+    ChatLineSquare,
+    Clock,
+    Promotion
   },
   setup() {
     const router = useRouter()
@@ -844,11 +903,11 @@ export default {
   color: #666;
   font-size: 14px;
   flex-direction: column;
+  gap: 8px;
 }
   
 .image-loading i {
   font-size: 20px;
-  margin-bottom: 8px;
 }
   
 .image-error {
@@ -860,11 +919,11 @@ export default {
   background: #fef0f0;
   color: #f56c6c;
   font-size: 14px;
+  gap: 8px;
 }
   
 .image-error i {
   font-size: 24px;
-  margin-bottom: 8px;
 }
   
 .image-error button {
@@ -928,167 +987,198 @@ export default {
 .content-layout {
   max-width: 1200px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
-  padding: 20px;
   margin-bottom: 20px;
-  backdrop-filter: blur(10px);
 }
 
-.content-text {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+.content-card {
   border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 2;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-.content-text h2 {
-  margin-bottom: 20px;
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.content-title {
+  margin: 0;
   color: #333;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .content-meta {
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #666;
+  display: flex;
+  align-items: center;
 }
 
 .bottle-id {
-  background: #f0f0f0;
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  background: #ecf5ff;
+  color: #409eff;
+  padding: 4px 10px;
   border-radius: 4px;
+  font-size: 14px;
   font-weight: 500;
 }
 
+.bottle-id .el-icon {
+  margin-right: 6px;
+}
+
 .content-tags {
-  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .content-tags .tag {
-  margin-right: 10px;
+  margin: 0;
+}
+
+.content-text {
+  padding: 20px 0;
 }
 
 .content-text p {
   margin-bottom: 15px;
-  line-height: 1.6;
+  line-height: 1.8;
   color: #555;
-}
-
-.empty-content {
-  color: #999;
-  font-style: italic;
-  padding: 15px;
-  background-color: #f8f8f8;
-  border-radius: 5px;
+  font-size: 16px;
+  white-space: pre-wrap;
 }
 
 .content-images {
   margin-top: 20px;
-  
-  .images-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-  }
-  
-  .content-image {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    
-    :deep(.el-image__inner) {
-      transition: transform 0.3s ease;
-      cursor: pointer;
-      
-      &:hover {
-        transform: scale(1.05);
-      }
-    }
-    
-    :deep(.el-image__placeholder) {
-      background-color: #f5f7fa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-  
-  .image-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #909399;
-    font-size: 14px;
-  }
-  
-  .image-error {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #f56c6c;
-    font-size: 14px;
-  }
-  
-  .empty-content {
-    text-align: center;
-    color: #909399;
-    font-size: 14px;
-    padding: 40px 0;
-  }
 }
 
-.image-preview {
+.images-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.content-image {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  aspect-ratio: 1/1;
+}
+
+.content-image :deep(.el-image__inner) {
+  transition: transform 0.3s ease;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.image-preview:hover {
+.content-image :deep(.el-image__inner):hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.2);
 }
 
-.image-loading, .image-error {
+.content-image :deep(.el-image__placeholder) {
+  background-color: #f5f7fa;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 100%;
-  background: #f5f7fa;
-  color: #666;
+  color: #909399;
   font-size: 14px;
+  gap: 8px;
+}
+
+.image-loading .el-icon {
+  font-size: 20px;
+}
+
+.image-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #f56c6c;
+  font-size: 14px;
+  gap: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.image-error .el-icon {
+  font-size: 24px;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #909399;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.empty-content .el-icon {
+  font-size: 36px;
 }
 
 .action-buttons {
   display: flex;
   justify-content: center;
-  gap: 60px;
-  padding: 50px;
+  gap: 30px;
+  padding: 30px 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .action-buttons :deep(.el-button) {
-  font-size: 18px;
-  padding: 20px 40px;
-  border-radius: 10px;
+  font-size: 16px;
+  padding: 15px 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .comments-section {
   max-width: 1200px;
   margin: 0 auto 30px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
-  padding: 20px;
-  backdrop-filter: blur(10px);
+}
+
+.comments-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .comments-header h3 {
-  margin: 0 0 20px 0;
+  margin: 0;
   color: #333;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comments-header .el-icon {
   font-size: 20px;
 }
 
@@ -1104,7 +1194,7 @@ export default {
 .comment-content p {
   margin: 0 0 10px 0;
   color: #555;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .comment-header {
@@ -1115,9 +1205,16 @@ export default {
 }
 
 .comment-id {
+  display: inline-flex;
+  align-items: center;
   font-size: 12px;
   color: #999;
   font-weight: bold;
+}
+
+.comment-id .el-icon {
+  margin-right: 4px;
+  font-size: 12px;
 }
 
 .comment-meta {
@@ -1125,15 +1222,30 @@ export default {
 }
 
 .comment-time {
+  display: inline-flex;
+  align-items: center;
   font-size: 12px;
   color: #999;
 }
 
+.comment-time .el-icon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
 .no-comments {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   color: #999;
-  padding: 30px 0;
+  padding: 40px 0;
   font-style: italic;
+  gap: 10px;
+}
+
+.no-comments .el-icon {
+  font-size: 24px;
 }
 
 .comment-form {
@@ -1143,6 +1255,12 @@ export default {
 .comment-actions {
   margin-top: 15px;
   text-align: right;
+}
+
+.comment-actions :deep(.el-button) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* 禁用图片预览时的拖拽功能 */
@@ -1176,13 +1294,23 @@ export default {
   .action-buttons {
     flex-direction: column;
     align-items: center;
-    gap: 30px;
+    gap: 20px;
+    padding: 20px 0;
   }
   
   .action-buttons :deep(.el-button) {
     width: 80%;
     padding: 15px 25px;
     font-size: 16px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .content-title {
+    font-size: 20px;
   }
 }
 </style>
