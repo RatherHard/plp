@@ -27,24 +27,6 @@
       alt="Baka" 
       class="bottom-right-image" 
     />
-    
-    <el-dialog
-      v-model="dialogVisible"
-      title="网站说明"
-      width="80%"
-      center
-    >
-      <div class="instructions">
-        <p v-for="(text, index) in instructionsText" :key="index">{{ text }}</p>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button type="primary" @click="dialogVisible = false">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
-    
-    <!-- 首页不显示 Footer -->
   </div>
 </template>
 
@@ -52,7 +34,6 @@
 import { defineComponent, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import HeaderComponent from '../components/Header.vue'
-import { ElDialog } from 'element-plus'
 import store from '../store'
 import VideoBackground from '../components/VideoBackground.vue'
 
@@ -61,7 +42,6 @@ export default defineComponent({
   name: 'Home',
   components: {
     HeaderComponent,
-    ElDialog,
     VideoBackground
   },
   setup() {
@@ -102,12 +82,7 @@ export default defineComponent({
     const goToSelect = () => {
       router.push('/select-edit')
     }
-    
-    // 显示说明弹窗
-    const showInstructions = () => {
-      dialogVisible.value = true
-    }
-    
+        
     return {
       backgroundVideo,
       dialogVisible,
@@ -118,7 +93,6 @@ export default defineComponent({
       onVideoEnded,
       handleStartButtonClick,
       goToSelect,
-      showInstructions
     }
   }
 })
