@@ -4,7 +4,10 @@
       <!-- 头部 -->
       <el-header class="manager-header">
         <div class="header-content">
-          <h1>漂流瓶管理局</h1>
+          <h1>
+            <el-icon><ChatLineSquare /></el-icon>
+            漂流瓶管理局
+          </h1>
           <div class="header-actions">
             <el-button type="danger" @click="handleLogout" v-if="localStorage.getItem('adminToken')">
               <el-icon><SwitchButton /></el-icon>
@@ -21,12 +24,16 @@
           <el-card class="login-card">
             <template #header>
               <div class="card-header">
+                <el-icon><User /></el-icon>
                 <span>管理员登录</span>
               </div>
             </template>
             
             <div class="login-description">
-              <p>请输入管理员密码以访问审核后台</p>
+              <p>
+                <el-icon><Document /></el-icon>
+                请输入管理员密码以访问审核后台
+              </p>
             </div>
             
             <el-form @submit.prevent="handleLogin" class="login-form">
@@ -54,6 +61,7 @@
                   size="large"
                   round
                 >
+                  <el-icon v-if="!loginLoading"><User /></el-icon>
                   登录
                 </el-button>
               </el-form-item>
@@ -67,6 +75,10 @@
           <el-aside width="350px" class="sidebar">
             <el-tabs v-model="activeTab" @tab-change="handleTabChange" stretch>
               <el-tab-pane label="待审核" name="pending">
+                <template #label>
+                  <el-icon><Clock /></el-icon>
+                  待审核
+                </template>
                 <div class="content-list">
                   <el-empty v-if="pendingList.length === 0" description="暂无待审核内容" />
                   <el-card 
@@ -78,18 +90,35 @@
                     shadow="hover"
                   >
                     <div class="item-header">
-                      <el-tag type="info" size="small">ID: {{ item.id }}</el-tag>
-                      <span class="item-time">{{ item.uploadTime }}</span>
+                      <span class="item-id">
+                        <el-icon><Document /></el-icon>
+                        ID: {{ item.id }}
+                      </span>
+                      <span class="item-time">
+                        <el-icon><Clock /></el-icon>
+                        {{ item.uploadTime }}
+                      </span>
                     </div>
                     <div class="item-preview">
-                      <p v-if="item.text">{{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}</p>
-                      <p v-else>无内容</p>
+                      <p v-if="item.text">
+                        <el-icon v-if="!item.filenames || item.filenames.length === 0"><Document /></el-icon>
+                        <el-icon v-else><Picture /></el-icon>
+                        {{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}
+                      </p>
+                      <p v-else>
+                        <el-icon><Document /></el-icon>
+                        无内容
+                      </p>
                     </div>
                   </el-card>
                 </div>
               </el-tab-pane>
               
               <el-tab-pane label="已通过" name="approved">
+                <template #label>
+                  <el-icon><Check /></el-icon>
+                  已通过
+                </template>
                 <div class="search-container">
                   <el-input
                     v-model="searchKeyword"
@@ -115,18 +144,35 @@
                     shadow="hover"
                   >
                     <div class="item-header">
-                      <el-tag type="success" size="small">ID: {{ item.id }}</el-tag>
-                      <span class="item-time">{{ item.uploadTime }}</span>
+                      <span class="item-id">
+                        <el-icon><Document /></el-icon>
+                        ID: {{ item.id }}
+                      </span>
+                      <span class="item-time">
+                        <el-icon><Clock /></el-icon>
+                        {{ item.uploadTime }}
+                      </span>
                     </div>
                     <div class="item-preview">
-                      <p v-if="item.text">{{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}</p>
-                      <p v-else>无内容</p>
+                      <p v-if="item.text">
+                        <el-icon v-if="!item.filenames || item.filenames.length === 0"><Document /></el-icon>
+                        <el-icon v-else><Picture /></el-icon>
+                        {{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}
+                      </p>
+                      <p v-else>
+                        <el-icon><Document /></el-icon>
+                        无内容
+                      </p>
                     </div>
                   </el-card>
                 </div>
               </el-tab-pane>
               
               <el-tab-pane label="回应审核" name="comments">
+                <template #label>
+                  <el-icon><ChatLineSquare /></el-icon>
+                  回应审核
+                </template>
                 <div class="content-list">
                   <el-empty v-if="pendingCommentsList.length === 0" description="暂无待审核回应" />
                   <el-card 
@@ -138,12 +184,24 @@
                     shadow="hover"
                   >
                     <div class="item-header">
-                      <el-tag type="warning" size="small">回应ID: {{ item.id }}</el-tag>
-                      <span class="item-time">{{ item.createTime }}</span>
+                      <span class="item-id">
+                        <el-icon><ChatLineSquare /></el-icon>
+                        回应ID: {{ item.id }}
+                      </span>
+                      <span class="item-time">
+                        <el-icon><Clock /></el-icon>
+                        {{ item.createTime }}
+                      </span>
                     </div>
                     <div class="item-preview">
-                      <p v-if="item.content">{{ item.content.substring(0, 100) }}{{ item.content.length > 100 ? '...' : '' }}</p>
-                      <p v-else>无内容</p>
+                      <p v-if="item.content">
+                        <el-icon><ChatLineSquare /></el-icon>
+                        {{ item.content.substring(0, 100) }}{{ item.content.length > 100 ? '...' : '' }}
+                      </p>
+                      <p v-else>
+                        <el-icon><ChatLineSquare /></el-icon>
+                        无内容
+                      </p>
                     </div>
                   </el-card>
                 </div>
@@ -157,7 +215,10 @@
               <el-card class="detail-card">
                 <template #header>
                   <div class="detail-header">
-                    <span>内容详情</span>
+                    <span>
+                      <el-icon><Document /></el-icon>
+                      内容详情
+                    </span>
                     <div class="detail-actions">
                       <template v-if="activeTab === 'pending'">
                         <el-button type="success" @click="approveContent" size="small">
@@ -189,27 +250,41 @@
                   <div v-if="activeTab !== 'comments'">
                     <el-descriptions :column="1" border size="small">
                       <el-descriptions-item label="ID">
-                        <el-tag>{{ selectedItem.id }}</el-tag>
+                        <span class="detail-id">
+                          <el-icon><Document /></el-icon>
+                          {{ selectedItem.id }}
+                        </span>
                       </el-descriptions-item>
                       
                       <el-descriptions-item label="标题">
+                        <el-icon><Edit /></el-icon>
                         {{ selectedItem.title || '无标题' }}
                       </el-descriptions-item>
                       
                       <el-descriptions-item v-if="selectedItem.originalTitle !== undefined" label="原标题">
+                        <el-icon><Edit /></el-icon>
                         {{ selectedItem.originalTitle || '无标题' }}
                       </el-descriptions-item>
                       
                       <el-descriptions-item label="上传时间">
-                        <el-tag type="info">{{ selectedItem.uploadTime }}</el-tag>
+                        <span class="detail-time">
+                          <el-icon><Clock /></el-icon>
+                          {{ selectedItem.uploadTime }}
+                        </span>
                       </el-descriptions-item>
                       
                       <el-descriptions-item label="内容">
-                        <div class="content-text">{{ selectedItem.text }}</div>
+                        <div class="content-text">
+                          <el-icon><Document /></el-icon>
+                          {{ selectedItem.text }}
+                        </div>
                       </el-descriptions-item>
                       
                       <el-descriptions-item v-if="selectedItem.originalText !== undefined" label="原文">
-                        <div class="content-text">{{ selectedItem.originalText }}</div>
+                        <div class="content-text">
+                          <el-icon><Document /></el-icon>
+                          {{ selectedItem.originalText }}
+                        </div>
                       </el-descriptions-item>
                       
                       <el-descriptions-item v-if="selectedItem.filenames && selectedItem.filenames.length > 0" label="图片">
@@ -229,10 +304,16 @@
                               :zoom-rate="1.2"
                             >
                               <template #placeholder>
-                                <div class="image-loading">加载中...</div>
+                                <div class="image-loading">
+                                  <el-icon><Picture /></el-icon>
+                                  加载中...
+                                </div>
                               </template>
                               <template #error>
-                                <div class="image-error">图片加载失败</div>
+                                <div class="image-error">
+                                  <el-icon><Picture /></el-icon>
+                                  图片加载失败
+                                </div>
                               </template>
                             </el-image>
                           </div>
@@ -245,19 +326,31 @@
                   <div v-else>
                     <el-descriptions :column="1" border size="small">
                       <el-descriptions-item label="回应ID">
-                        <el-tag>{{ selectedItem.id }}</el-tag>
+                        <span class="detail-id">
+                          <el-icon><ChatLineSquare /></el-icon>
+                          {{ selectedItem.id }}
+                        </span>
                       </el-descriptions-item>
                       
                       <el-descriptions-item label="帖子ID">
-                        <el-tag type="info">{{ selectedItem.recordId }}</el-tag>
+                        <span class="detail-id">
+                          <el-icon><Document /></el-icon>
+                          {{ selectedItem.recordId }}
+                        </span>
                       </el-descriptions-item>
                       
                       <el-descriptions-item label="回应内容">
-                        <div class="content-text">{{ selectedItem.content || selectedItem.text }}</div>
+                        <div class="content-text">
+                          <el-icon><ChatLineSquare /></el-icon>
+                          {{ selectedItem.content || selectedItem.text }}
+                        </div>
                       </el-descriptions-item>
                       
                       <el-descriptions-item label="回应时间">
-                        <el-tag type="info">{{ selectedItem.commentTime }}</el-tag>
+                        <span class="detail-time">
+                          <el-icon><Clock /></el-icon>
+                          {{ selectedItem.commentTime }}
+                        </span>
                       </el-descriptions-item>
                     </el-descriptions>
                   </div>
@@ -266,7 +359,10 @@
                   <div class="detail-comments" v-if="activeTab === 'approved' && selectedItem">
                     <el-divider />
                     <div class="comments-section">
-                      <h3>已审核回应 ({{ approvedCommentsList.length }})</h3>
+                      <h3>
+                        <el-icon><ChatLineSquare /></el-icon>
+                        已审核回应 ({{ approvedCommentsList.length }})
+                      </h3>
                       
                       <div class="comment-search-bar">
                         <el-input
@@ -292,11 +388,20 @@
                         >
                           <div class="comment-content">
                             <div class="comment-header">
-                              <el-tag type="success" size="small">ID: {{ comment.id }}</el-tag>
+                              <span class="item-id">
+                                <el-icon><ChatLineSquare /></el-icon>
+                                ID: {{ comment.id }}
+                              </span>
                             </div>
-                            <p>{{ comment.content }}</p>
+                            <p>
+                              <el-icon><ChatLineSquare /></el-icon>
+                              {{ comment.content }}
+                            </p>
                             <div class="comment-meta">
-                              <span class="comment-time">{{ comment.commentTime }}</span>
+                              <span class="comment-time">
+                                <el-icon><Clock /></el-icon>
+                                {{ comment.commentTime }}
+                              </span>
                               <el-button 
                                 type="danger" 
                                 size="small" 
@@ -316,7 +421,11 @@
             
             <div class="content-detail placeholder" v-else>
               <el-card class="placeholder-card">
-                <el-empty description="请选择要查看的内容" />
+                <el-empty description="请选择要查看的内容">
+                  <template #icon>
+                    <el-icon><Document /></el-icon>
+                  </template>
+                </el-empty>
               </el-card>
             </div>
           </el-main>
@@ -1326,6 +1435,11 @@ export default {
   font-size: 24px;
 }
 
+.manager-header h1 .el-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 .manager-main {
   height: calc(100% - 60px);
 }
@@ -1355,6 +1469,11 @@ export default {
   text-align: center;
 }
 
+.card-header .el-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 .login-description {
   text-align: center;
   margin-bottom: 20px;
@@ -1363,6 +1482,11 @@ export default {
 .login-description p {
   margin: 0;
   color: #666666;
+}
+
+.login-description p .el-icon {
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .login-form {
@@ -1448,6 +1572,11 @@ export default {
   color: #666666;
 }
 
+.item-header .el-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
 .item-preview p {
   margin: 0;
   color: #333333;
@@ -1455,9 +1584,13 @@ export default {
   line-height: 1.4;
 }
 
+.item-preview .el-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 .main-content {
   padding: 15px;
-  overflow: hidden;
   background-color: #f5f5f5;
 }
 
@@ -1487,6 +1620,11 @@ export default {
   font-weight: bold;
 }
 
+.detail-header .el-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 .detail-body {
   flex: 1;
   overflow-y: auto;
@@ -1498,6 +1636,11 @@ export default {
   line-height: 1.6;
   padding: 10px 0;
   color: #333333;
+}
+
+.content-text .el-icon {
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .image-container {
@@ -1530,6 +1673,11 @@ export default {
   color: #999999;
 }
 
+.image-loading .el-icon,
+.image-error .el-icon {
+  margin-right: 6px;
+}
+
 .detail-comments {
   margin-top: 20px;
 }
@@ -1539,6 +1687,11 @@ export default {
   color: #333333;
   font-size: 18px;
   font-weight: 600;
+}
+
+.comments-section h3 .el-icon {
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .comments-list {
@@ -1561,12 +1714,22 @@ export default {
   word-wrap: break-word;
 }
 
+.comment-content p .el-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 .comment-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
   color: #666666;
+}
+
+.comment-meta .el-icon {
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
 .content-detail.placeholder {
@@ -1587,5 +1750,58 @@ export default {
 
 :deep(.el-empty__description) {
   color: #999999 !important;
+}
+
+/* 通用图标间距样式 */
+.el-icon + span,
+span + .el-icon {
+  margin-left: 6px;
+}
+
+.el-icon + span:first-child {
+  margin-left: 0;
+}
+
+.el-button .el-icon {
+  margin-right: 4px;
+}
+
+/* ID 和时间样式优化 */
+.item-id,
+.detail-id,
+.item-time,
+.detail-time {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.item-id,
+.detail-id {
+  background-color: #ecf5ff;
+  color: #409eff;
+  border: 1px solid #d9ecff;
+}
+
+.item-time,
+.detail-time {
+  background-color: #f4f4f5;
+  color: #909399;
+  border: 1px solid #e9e9eb;
+}
+
+.item-id .el-icon,
+.detail-id .el-icon,
+.item-time .el-icon,
+.detail-time .el-icon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+.comment-header .item-id {
+  margin-bottom: 8px;
 }
 </style>
