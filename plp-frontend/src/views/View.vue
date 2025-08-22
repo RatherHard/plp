@@ -84,14 +84,10 @@
           <el-icon><Position /></el-icon>
           扔出
         </el-button>
-        <el-button type="info" @click="toggleComments" v-if="store.getSource() !== 0">
-          <el-icon><ChatLineSquare /></el-icon>
-          回应
-        </el-button>
       </div>
       
       <!-- 回应区 -->
-      <div class="comments-section" v-if="showComments">
+      <div class="comments-section">
         <el-card class="comments-card">
           <template #header>
             <div class="comments-header">
@@ -207,7 +203,6 @@ export default {
   setup() {
     const router = useRouter()
     const dialogVisible = ref(false)
-    const showComments = ref(false)
     const newComment = ref('')
     const comments = ref([])
     const imageLoadStatus = ref({})  // 图片加载状态
@@ -334,8 +329,6 @@ export default {
     
     const handleImageError = (e) => {
       console.error('图片加载失败:', e)
-      // 不再显示全局错误消息，因为每个图片都有独立的错误提示
-      // ElMessage.error('图片加载失败')
     }
     
     // 图片加载进度处理
@@ -791,16 +784,6 @@ export default {
         })
       }
     })
-
-    // 切换评论区显示状态
-    const toggleComments = async () => {
-      showComments.value = !showComments.value
-      
-      // 如果是打开评论区，则获取最新评论
-      if (showComments.value) {
-        await fetchComments()
-      }
-    }
     
     // 添加评论
     const addComment = async () => {
@@ -828,7 +811,7 @@ export default {
           
           if (response.ok) {
             newComment.value = ''
-            ElMessage.success('评论发表成功！')
+            ElMessage.success('评论发表成功，正在等待审核！')
           } else {
             console.error('服务器返回错误:', response.status)
             ElMessage.error('评论发表失败，请稍后重试')
@@ -859,10 +842,8 @@ export default {
       imageLoadStatus,
       showImages, // 添加 showImages 属性
       // 评论功能相关
-      showComments,
       newComment,
       comments,
-      toggleComments,
       addComment
     }
   }
