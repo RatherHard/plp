@@ -8,7 +8,9 @@
       muted
       v-if="videoSrc"
     ></video>
-    <div v-else class="fallback-background"></div>
+    <div v-if="fallback" class="fallback-background">
+      <img src="/videos/fallback-frame.png" alt="Fallback Background">
+    </div>
   </div>
 </template>
 
@@ -32,7 +34,8 @@ export default {
     }
   },
   setup(props) {
-    const videoSrc = ref('')
+    let videoSrc = ref('')
+    const fallback = ref(false)
     
     onMounted(async () => {
       try {
@@ -42,12 +45,13 @@ export default {
           videoSrc.value = props.videoPath
         }
       } catch (e) {
-        // 视频检查失败时使用默认背景
+        fallback.value = true
       }
     })
     
     return {
-      videoSrc
+      videoSrc,
+      fallback
     }
   }
 }
@@ -79,6 +83,12 @@ export default {
 .fallback-background {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #66bcea 0%, #122aff 100%);
+}
+
+.fallback-background img { 
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 </style>
