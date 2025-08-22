@@ -84,23 +84,6 @@
         </el-row>
       </div>
       
-      <!-- 网站说明弹窗 -->
-      <el-dialog
-        v-model="dialogVisible"
-        title="网站说明"
-        width="80%"
-        center
-      >
-        <div class="instructions">
-          <p v-for="(text, index) in instructionsText" :key="index">{{ text }}</p>
-        </div>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button type="primary" @click="dialogVisible = false">确定</el-button>
-          </span>
-        </template>
-      </el-dialog>
-      
       <!-- 放弃编辑确认弹窗 -->
       <el-dialog
         v-model="cancelDialogVisible"
