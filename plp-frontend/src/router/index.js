@@ -5,6 +5,7 @@ import Manager from '../views/Manager.vue'
 import SelectEdit from '../views/SelectEdit.vue'
 import Introduction from '../views/Introduction.vue'
 import AdminInit from '../views/AdminInit.vue'
+import Edit from '../views/Edit.vue'
 
 console.log('开始初始化路由...')
 
@@ -20,8 +21,13 @@ const routes = [
     component: View
   },
   {
-    path: '/select-edit',
+    path: '/edit',
     name: 'Edit',
+    component: Edit
+  },
+  {
+    path: '/select-edit',
+    name: 'SelectEdit',
     component: SelectEdit
   },
   {
