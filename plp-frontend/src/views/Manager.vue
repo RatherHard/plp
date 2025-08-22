@@ -1,335 +1,368 @@
 <template>
   <div class="manager-container">
-    <header class="manager-header">
-      <h1>漂流瓶管理局</h1>
-      <div class="header-actions">
-        <el-button type="danger" @click="handleLogout" v-if="localStorage.getItem('adminToken')">退出登录</el-button>
-      </div>
-    </header>
-        
-    <!-- 未登录提示 -->
-    <div v-if="!localStorage.getItem('adminToken')" class="login-required">
-      <div class="login-form">
-        <h2>管理员登录</h2>
-        <p>请输入管理员密码以访问审核后台</p>
-        
-        <el-form @submit.prevent="handleLogin" class="login-form-content">
-          <el-form-item>
-            <el-input
-              v-model="loginPassword"
-              type="password"
-              placeholder="请输入管理员密码"
-              show-password
-              @keyup.enter="handleLogin"
-            />
-          </el-form-item>
-          
-          <el-form-item>
-            <el-button 
-              type="primary" 
-              @click="handleLogin"
-              :loading="loginLoading"
-              class="login-button"
-            >
-              登录
+    <el-container class="full-height">
+      <!-- 头部 -->
+      <el-header class="manager-header">
+        <div class="header-content">
+          <h1>漂流瓶管理局</h1>
+          <div class="header-actions">
+            <el-button type="danger" @click="handleLogout" v-if="localStorage.getItem('adminToken')">
+              <el-icon><SwitchButton /></el-icon>
+              退出登录
             </el-button>
-          </el-form-item>
-        </el-form>
-      </div>
-    </div>
-    
-    <!-- 主要内容区域 -->
-    <main class="manager-main" v-else>
-      <div class="sidebar">
-        <div class="filter-buttons">
-          <el-button 
-            :type="activeTab === 'pending' ? 'primary' : 'default'" 
-            @click="switchTab('pending')"
-          >
-            待审核
-          </el-button>
-          <el-button 
-            :type="activeTab === 'approved' ? 'primary' : 'default'" 
-            @click="switchTab('approved')"
-          >
-            已通过
-          </el-button>
-          <el-button 
-            :type="activeTab === 'comments' ? 'primary' : 'default'" 
-            @click="switchTab('comments')"
-          >
-            回应审核
-          </el-button>
+          </div>
         </div>
-        
-        <!-- 搜索栏 (仅在已审核标签页显示) -->
-        <div class="search-bar" v-if="activeTab === 'approved'">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索漂流瓶ID..."
-            clearable
-            @clear="searchKeyword = ''"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
+      </el-header>
+
+      <!-- 主体内容 -->
+      <el-container class="manager-main">
+        <!-- 未登录提示 -->
+        <div v-if="!localStorage.getItem('adminToken')" class="login-required">
+          <el-card class="login-card">
+            <template #header>
+              <div class="card-header">
+                <span>管理员登录</span>
+              </div>
             </template>
-          </el-input>
-        </div>
-        
-        <div class="content-list">
-          <div 
-            v-for="item in activeList" 
-            :key="item.id" 
-            class="content-item"
-            :class="{ 'selected': selectedItem && selectedItem.id === item.id }"
-            @click="selectItem(item)"
-          >
-            <div class="item-header" v-if="activeTab !== 'comments'">
-              <span class="item-id">ID: {{ item.id }}</span>
-              <span class="item-time">{{ item.uploadTime }}</span>
+            
+            <div class="login-description">
+              <p>请输入管理员密码以访问审核后台</p>
             </div>
-            <div class="item-header" v-else>
-              <span class="item-id">回应ID: {{ item.id }}</span>
-              <span class="item-time">{{ item.createTime }}</span>
-            </div>
-            <div class="item-preview">
-              <p v-if="item.text">{{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}</p>
-              <p v-else-if="item.content">{{ item.content.substring(0, 100) }}{{ item.content.length > 100 ? '...' : '' }}</p>
-              <p v-else>无内容</p>
-            </div>
-          </div>
-          <div v-if="activeList.length === 0" class="no-content">
-            暂无内容
-          </div>
-        </div>
-      </div>
-      
-      <div class="content-detail" v-if="selectedItem">
-        <div class="detail-header">
-          <h2>内容详情</h2>
-          <div class="detail-actions" v-if="activeTab === 'pending'">
-            <el-button type="success" @click="approveContent">通过</el-button>
-            <el-button type="danger" @click="rejectContent">拒绝</el-button>
-          </div>
-          <div class="detail-actions" v-else-if="activeTab === 'approved'">
-            <el-button type="danger" @click="deleteContent">删除</el-button>
-          </div>
-          <div class="detail-actions" v-else-if="activeTab === 'comments'">
-            <el-button type="success" @click="approveComment">通过</el-button>
-            <el-button type="danger" @click="rejectComment">拒绝</el-button>
-          </div>
-        </div>
-        
-        <div class="detail-info" v-if="activeTab !== 'comments'">
-          <el-descriptions :column="1" border>
-            <el-descriptions-item label="ID" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Document /></el-icon>
-                  ID
-                </div>
-              </template>
-              {{ selectedItem.id }}
-            </el-descriptions-item>
             
-            <el-descriptions-item label="标题" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Document /></el-icon>
-                  标题
-                </div>
-              </template>
-              {{ selectedItem.title || '无标题' }}
-            </el-descriptions-item>
-            
-            <el-descriptions-item v-if="selectedItem.originalTitle !== undefined" label="原标题" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Edit /></el-icon>
-                  原标题
-                </div>
-              </template>
-              {{ selectedItem.originalTitle || '无标题' }}
-            </el-descriptions-item>
-            
-            <el-descriptions-item label="上传时间" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Clock /></el-icon>
-                  上传时间
-                </div>
-              </template>
-              {{ selectedItem.uploadTime }}
-            </el-descriptions-item>
-            
-            <el-descriptions-item label="内容" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><ChatLineSquare /></el-icon>
-                  内容
-                </div>
-              </template>
-              <div class="content-text">{{ selectedItem.text }}</div>
-            </el-descriptions-item>
-            
-            <el-descriptions-item v-if="selectedItem.originalText !== undefined" label="原文" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Edit /></el-icon>
-                  原文
-                </div>
-              </template>
-              <div class="content-text">{{ selectedItem.originalText }}</div>
-            </el-descriptions-item>
-            
-            <el-descriptions-item v-if="selectedItem.filenames && selectedItem.filenames.length > 0" label="图片" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Picture /></el-icon>
-                  图片
-                </div>
-              </template>
-              <div class="info-value">
-                <div 
-                  v-for="(filename, index) in selectedItem.filenames" 
-                  :key="index"
-                  class="image-preview"
+            <el-form @submit.prevent="handleLogin" class="login-form">
+              <el-form-item>
+                <el-input
+                  v-model="loginPassword"
+                  type="password"
+                  placeholder="请输入管理员密码"
+                  show-password
+                  @keyup.enter="handleLogin"
+                  size="large"
                 >
-                  <el-image
-                    :src="completeImage(filename)"
-                    fit="cover"
-                    class="preview-image"
-                    :preview-src-list="[completeImage(filename)]"
-                    :initial-index="index"
-                    :preview-teleported="true"
-                    :zoom-rate="1.2"
-                  >
-                    <template #placeholder>
-                      <div class="image-loading">加载中...</div>
-                    </template>
-                    <template #error>
-                      <div class="image-error">图片加载失败</div>
-                    </template>
-                  </el-image>
-                </div>
-              </div>
-            </el-descriptions-item>
-          </el-descriptions>
+                  <template #prefix>
+                    <el-icon><Lock /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+              
+              <el-form-item>
+                <el-button 
+                  type="primary" 
+                  @click="handleLogin"
+                  :loading="loginLoading"
+                  class="login-button"
+                  size="large"
+                  round
+                >
+                  登录
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-card>
         </div>
         
-        <!-- 已审核帖子的回应区域 -->
-        <div class="detail-comments" v-if="activeTab === 'approved' && selectedItem">
-          <div class="comments-header">
-            <h3>已审核回应 ({{ approvedCommentsList.length }})</h3>
-          </div>
-          
-          <!-- 回应搜索栏 -->
-          <div class="comment-search-bar">
-            <el-input
-              v-model="commentSearchKeyword"
-              placeholder="搜索回应ID..."
-              clearable
-              style="width: 300px; margin-bottom: 15px;"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-          </div>
-          
-          <div class="comments-list">
-            <div 
-              v-for="(comment, index) in filteredApprovedComments" 
-              :key="comment.id"
-              class="comment-item"
-            >
-              <div class="comment-content">
-                <div class="comment-header" v-if="comment.id">
-                  <span class="comment-id">ID: {{ comment.id }}</span>
-                </div>
-                <p>{{ comment.content }}</p>
-                <div class="comment-meta">
-                  <span class="comment-time">{{ comment.commentTime }}</span>
-                  <el-button 
-                    type="danger" 
-                    size="small" 
-                    @click="deleteApprovedComment(comment.id)"
-                    style="margin-left: 10px;"
+        <!-- 登录后内容 -->
+        <template v-else>
+          <!-- 侧边栏 -->
+          <el-aside width="350px" class="sidebar">
+            <el-tabs v-model="activeTab" @tab-change="handleTabChange" stretch>
+              <el-tab-pane label="待审核" name="pending">
+                <div class="content-list">
+                  <el-empty v-if="pendingList.length === 0" description="暂无待审核内容" />
+                  <el-card 
+                    v-for="item in pendingList" 
+                    :key="item.id" 
+                    class="content-item-card"
+                    :class="{ 'selected': selectedItem && selectedItem.id === item.id }"
+                    @click="selectItem(item)"
+                    shadow="hover"
                   >
-                    删除
-                  </el-button>
+                    <div class="item-header">
+                      <el-tag type="info" size="small">ID: {{ item.id }}</el-tag>
+                      <span class="item-time">{{ item.uploadTime }}</span>
+                    </div>
+                    <div class="item-preview">
+                      <p v-if="item.text">{{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}</p>
+                      <p v-else>无内容</p>
+                    </div>
+                  </el-card>
                 </div>
-              </div>
+              </el-tab-pane>
+              
+              <el-tab-pane label="已通过" name="approved">
+                <div class="search-container">
+                  <el-input
+                    v-model="searchKeyword"
+                    placeholder="搜索漂流瓶ID..."
+                    clearable
+                    @clear="searchKeyword = ''"
+                    size="small"
+                  >
+                    <template #prefix>
+                      <el-icon><Search /></el-icon>
+                    </template>
+                  </el-input>
+                </div>
+                
+                <div class="content-list">
+                  <el-empty v-if="filteredApprovedList.length === 0" description="暂无已通过内容" />
+                  <el-card 
+                    v-for="item in filteredApprovedList" 
+                    :key="item.id" 
+                    class="content-item-card"
+                    :class="{ 'selected': selectedItem && selectedItem.id === item.id }"
+                    @click="selectItem(item)"
+                    shadow="hover"
+                  >
+                    <div class="item-header">
+                      <el-tag type="success" size="small">ID: {{ item.id }}</el-tag>
+                      <span class="item-time">{{ item.uploadTime }}</span>
+                    </div>
+                    <div class="item-preview">
+                      <p v-if="item.text">{{ item.text.substring(0, 100) }}{{ item.text.length > 100 ? '...' : '' }}</p>
+                      <p v-else>无内容</p>
+                    </div>
+                  </el-card>
+                </div>
+              </el-tab-pane>
+              
+              <el-tab-pane label="回应审核" name="comments">
+                <div class="content-list">
+                  <el-empty v-if="pendingCommentsList.length === 0" description="暂无待审核回应" />
+                  <el-card 
+                    v-for="item in pendingCommentsList" 
+                    :key="item.id" 
+                    class="content-item-card"
+                    :class="{ 'selected': selectedItem && selectedItem.id === item.id }"
+                    @click="selectItem(item)"
+                    shadow="hover"
+                  >
+                    <div class="item-header">
+                      <el-tag type="warning" size="small">回应ID: {{ item.id }}</el-tag>
+                      <span class="item-time">{{ item.createTime }}</span>
+                    </div>
+                    <div class="item-preview">
+                      <p v-if="item.content">{{ item.content.substring(0, 100) }}{{ item.content.length > 100 ? '...' : '' }}</p>
+                      <p v-else>无内容</p>
+                    </div>
+                  </el-card>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </el-aside>
+          
+          <!-- 主内容区 -->
+          <el-main class="main-content">
+            <div class="content-detail" v-if="selectedItem">
+              <el-card class="detail-card">
+                <template #header>
+                  <div class="detail-header">
+                    <span>内容详情</span>
+                    <div class="detail-actions">
+                      <template v-if="activeTab === 'pending'">
+                        <el-button type="success" @click="approveContent" size="small">
+                          <el-icon><Check /></el-icon>通过
+                        </el-button>
+                        <el-button type="danger" @click="rejectContent" size="small">
+                          <el-icon><Close /></el-icon>拒绝
+                        </el-button>
+                      </template>
+                      <template v-else-if="activeTab === 'approved'">
+                        <el-button type="danger" @click="deleteContent" size="small">
+                          <el-icon><Delete /></el-icon>删除
+                        </el-button>
+                      </template>
+                      <template v-else-if="activeTab === 'comments'">
+                        <el-button type="success" @click="approveComment" size="small">
+                          <el-icon><Check /></el-icon>通过
+                        </el-button>
+                        <el-button type="danger" @click="rejectComment" size="small">
+                          <el-icon><Close /></el-icon>拒绝
+                        </el-button>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+                
+                <div class="detail-body">
+                  <!-- 漂流瓶内容详情 -->
+                  <div v-if="activeTab !== 'comments'">
+                    <el-descriptions :column="1" border size="small">
+                      <el-descriptions-item label="ID">
+                        <el-tag>{{ selectedItem.id }}</el-tag>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item label="标题">
+                        {{ selectedItem.title || '无标题' }}
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item v-if="selectedItem.originalTitle !== undefined" label="原标题">
+                        {{ selectedItem.originalTitle || '无标题' }}
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item label="上传时间">
+                        <el-tag type="info">{{ selectedItem.uploadTime }}</el-tag>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item label="内容">
+                        <div class="content-text">{{ selectedItem.text }}</div>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item v-if="selectedItem.originalText !== undefined" label="原文">
+                        <div class="content-text">{{ selectedItem.originalText }}</div>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item v-if="selectedItem.filenames && selectedItem.filenames.length > 0" label="图片">
+                        <div class="image-container">
+                          <div 
+                            v-for="(filename, index) in selectedItem.filenames" 
+                            :key="index"
+                            class="image-preview"
+                          >
+                            <el-image
+                              :src="completeImage(filename)"
+                              fit="cover"
+                              class="preview-image"
+                              :preview-src-list="[completeImage(filename)]"
+                              :initial-index="index"
+                              :preview-teleported="true"
+                              :zoom-rate="1.2"
+                            >
+                              <template #placeholder>
+                                <div class="image-loading">加载中...</div>
+                              </template>
+                              <template #error>
+                                <div class="image-error">图片加载失败</div>
+                              </template>
+                            </el-image>
+                          </div>
+                        </div>
+                      </el-descriptions-item>
+                    </el-descriptions>
+                  </div>
+                  
+                  <!-- 回应内容详情 -->
+                  <div v-else>
+                    <el-descriptions :column="1" border size="small">
+                      <el-descriptions-item label="回应ID">
+                        <el-tag>{{ selectedItem.id }}</el-tag>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item label="帖子ID">
+                        <el-tag type="info">{{ selectedItem.recordId }}</el-tag>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item label="回应内容">
+                        <div class="content-text">{{ selectedItem.content || selectedItem.text }}</div>
+                      </el-descriptions-item>
+                      
+                      <el-descriptions-item label="回应时间">
+                        <el-tag type="info">{{ selectedItem.commentTime }}</el-tag>
+                      </el-descriptions-item>
+                    </el-descriptions>
+                  </div>
+                  
+                  <!-- 已审核帖子的回应区域 -->
+                  <div class="detail-comments" v-if="activeTab === 'approved' && selectedItem">
+                    <el-divider />
+                    <div class="comments-section">
+                      <h3>已审核回应 ({{ approvedCommentsList.length }})</h3>
+                      
+                      <div class="comment-search-bar">
+                        <el-input
+                          v-model="commentSearchKeyword"
+                          placeholder="搜索回应ID..."
+                          clearable
+                          style="width: 300px; margin-bottom: 15px;"
+                          size="small"
+                        >
+                          <template #prefix>
+                            <el-icon><Search /></el-icon>
+                          </template>
+                        </el-input>
+                      </div>
+                      
+                      <div class="comments-list">
+                        <el-empty v-if="filteredApprovedComments.length === 0" description="暂无已审核回应" />
+                        <el-card 
+                          v-for="(comment, index) in filteredApprovedComments" 
+                          :key="comment.id"
+                          class="comment-item"
+                          shadow="never"
+                        >
+                          <div class="comment-content">
+                            <div class="comment-header">
+                              <el-tag type="success" size="small">ID: {{ comment.id }}</el-tag>
+                            </div>
+                            <p>{{ comment.content }}</p>
+                            <div class="comment-meta">
+                              <span class="comment-time">{{ comment.commentTime }}</span>
+                              <el-button 
+                                type="danger" 
+                                size="small" 
+                                @click="deleteApprovedComment(comment.id)"
+                              >
+                                <el-icon><Delete /></el-icon>删除
+                              </el-button>
+                            </div>
+                          </div>
+                        </el-card>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </el-card>
             </div>
             
-            <div v-if="filteredApprovedComments.length === 0" class="no-comments">
-              {{
-                commentSearchKeyword ? 
-                `未找到ID包含"${commentSearchKeyword}"的回应` : 
-                '暂无已审核回应'
-              }}
+            <div class="content-detail placeholder" v-else>
+              <el-card class="placeholder-card">
+                <el-empty description="请选择要查看的内容" />
+              </el-card>
             </div>
-          </div>
-        </div>
-        
-        <div class="detail-info" v-else-if="activeTab === 'comments'">
-          <el-descriptions :column="1" border>
-            <el-descriptions-item label="回应ID" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Document /></el-icon>
-                  回应ID
-                </div>
-              </template>
-              {{ selectedItem.id }}
-            </el-descriptions-item>
-            
-            <el-descriptions-item label="帖子ID" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Document /></el-icon>
-                  帖子ID
-                </div>
-              </template>
-              {{ selectedItem.recordId }}
-            </el-descriptions-item>
-            
-            <el-descriptions-item label="回应内容" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><ChatLineSquare /></el-icon>
-                  回应内容
-                </div>
-              </template>
-              <div class="content-text">{{ selectedItem.content || selectedItem.text }}</div>
-            </el-descriptions-item>
-            
-            <el-descriptions-item label="回应时间" :label-class-name="'desc-label'">
-              <template #label>
-                <div class="desc-label">
-                  <el-icon><Clock /></el-icon>
-                  回应时间
-                </div>
-              </template>
-              {{ selectedItem.commentTime }}
-            </el-descriptions-item>
-          </el-descriptions>
-        </div>
-      </div>
-      
-      <div class="content-detail placeholder" v-else>
-        <div class="placeholder-text">
-          请选择要查看的内容
-        </div>
-      </div>
-    </main>
+          </el-main>
+        </template>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Document, Picture, Clock, ChatLineSquare, User, Edit } from '@element-plus/icons-vue'
+import { 
+  ElMessage, 
+  ElMessageBox,
+  ElContainer,
+  ElHeader,
+  ElMain,
+  ElAside,
+  ElCard,
+  ElTabs,
+  ElTabPane,
+  ElButton,
+  ElInput,
+  ElForm,
+  ElFormItem,
+  ElTag,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElImage,
+  ElEmpty,
+  ElDivider
+} from 'element-plus'
+import { 
+  Search, 
+  Document, 
+  Picture, 
+  Clock, 
+  ChatLineSquare, 
+  User, 
+  Edit,
+  Lock,
+  SwitchButton,
+  Check,
+  Close,
+  Delete
+} from '@element-plus/icons-vue'
 import { API_ENDPOINTS } from '../api'
 import { useRouter } from 'vue-router'
 
@@ -342,7 +375,29 @@ export default {
     Clock,
     ChatLineSquare,
     User,
-    Edit
+    Edit,
+    Lock,
+    SwitchButton,
+    Check,
+    Close,
+    Delete,
+    ElContainer,
+    ElHeader,
+    ElMain,
+    ElAside,
+    ElCard,
+    ElTabs,
+    ElTabPane,
+    ElButton,
+    ElInput,
+    ElForm,
+    ElFormItem,
+    ElTag,
+    ElDescriptions,
+    ElDescriptionsItem,
+    ElImage,
+    ElEmpty,
+    ElDivider
   },
   setup() {
     console.log(API_ENDPOINTS)
@@ -374,6 +429,18 @@ export default {
     
     // 添加回应搜索关键字状态
     const commentSearchKeyword = ref('')
+    
+    // 添加过滤已审核列表的计算属性
+    const filteredApprovedList = computed(() => {
+      if (!searchKeyword.value) {
+        return approvedList.value
+      }
+      
+      // 根据帖子ID进行搜索
+      return approvedList.value.filter(item => 
+        item.id && item.id.toString().includes(searchKeyword.value)
+      )
+    })
     
     // 添加过滤已审核回应的计算属性
     const filteredApprovedComments = computed(() => {
@@ -531,7 +598,7 @@ export default {
     })
     
     // 切换标签页
-    const switchTab = (tab) => {
+    const handleTabChange = (tab) => {
       activeTab.value = tab
       // 清空之前选中的项
       selectedItem.value = null
@@ -1197,7 +1264,7 @@ export default {
       handleInit,
       handleLogout,
       activeList,
-      switchTab,
+      handleTabChange,
       processImages,
       fetchPendingContent,
       fetchApprovedContent,
@@ -1216,7 +1283,8 @@ export default {
       filteredApprovedComments, // 添加过滤已审核回应的计算属性
       pendingCommentsList, // 暴露待审核回应列表
       approvedCommentsList, // 暴露已审核回应列表
-      completeImage
+      completeImage,
+      filteredApprovedList
     }
   }
 }
@@ -1227,68 +1295,77 @@ export default {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #f5f5f5;
   overflow: hidden;
 }
 
+.full-height {
+  height: 100%;
+}
+
 .manager-header {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 0 20px;
+  height: 60px !important;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .manager-header h1 {
-  color: white;
+  color: #333333;
   margin: 0;
   font-size: 24px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.header-actions {
-  display: flex;
-  gap: 15px;
+.manager-main {
+  height: calc(100% - 60px);
 }
 
 .login-required {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+}
+
+.login-card {
+  width: 90%;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e6e6e6;
+}
+
+.card-header {
+  font-weight: bold;
+  font-size: 18px;
+  color: #333333;
+  text-align: center;
+}
+
+.login-description {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-description p {
+  margin: 0;
+  color: #666666;
 }
 
 .login-form {
-  text-align: center;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  max-width: 400px;
-  width: 90%;
-}
-
-.login-form h2 {
-  margin: 0 0 10px 0;
-  color: #fff;
-  font-size: 24px;
-}
-
-.login-form p {
-  margin: 0 0 20px 0;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.login-form-content {
   text-align: left;
 }
 
@@ -1297,92 +1374,69 @@ export default {
   margin-top: 10px;
 }
 
-.manager-main {
-  display: flex;
-  flex: 1;
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e6e6e6;
+  padding: 15px;
   overflow: hidden;
 }
 
-.sidebar {
-  width: 400px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
+.filter-card {
+  height: 100%;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.search-bar {
-  padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+:deep(.el-tabs__item) {
+  color: #666666;
+  font-weight: normal;
 }
 
-.search-bar .el-input__wrapper {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  box-shadow: none;
+:deep(.el-tabs__item.is-active) {
+  color: #409eff;
 }
 
-.search-bar .el-input__inner {
-  color: white;
-  background: transparent;
+:deep(.el-tabs__active-bar) {
+  background-color: #409eff;
 }
 
-.search-bar .el-input__inner::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.search-bar .el-icon {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.filter-buttons {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  gap: 10px;
-}
-
-.filter-buttons :deep(.el-button) {
-  flex: 1;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.filter-buttons :deep(.el-button:hover) {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.filter-buttons :deep(.el-button--primary) {
-  background: rgba(64, 158, 255, 0.8);
+.search-container {
+  padding: 10px 0;
 }
 
 .content-list {
-  flex: 1;
+  height: calc(100% - 60px);
   overflow-y: auto;
-  padding: 10px;
+  padding-right: 5px;
 }
 
-.content-item {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 10px;
+.content-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-list::-webkit-scrollbar-thumb {
+  background: #c0c4cc;
+  border-radius: 3px;
+}
+
+.content-item-card {
+  margin-bottom: 15px;
+  background: #fafafa;
+  border: 1px solid #e6e6e6;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid transparent;
 }
 
-.content-item:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.content-item-card:hover {
+  background: #f0f9ff;
+  border-color: #409eff;
 }
 
-.content-item.selected {
-  background: rgba(64, 158, 255, 0.3);
+.content-item-card.selected {
+  background: #ecf5ff;
   border-color: #409eff;
 }
 
@@ -1391,104 +1445,75 @@ export default {
   justify-content: space-between;
   margin-bottom: 8px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.item-id {
-  font-weight: bold;
-}
-
-.item-time {
-  font-style: italic;
+  color: #666666;
 }
 
 .item-preview p {
   margin: 0;
-  color: white;
+  color: #333333;
   font-size: 14px;
   line-height: 1.4;
 }
 
-.no-content {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-style: italic;
-  padding: 30px 0;
+.main-content {
+  padding: 15px;
+  overflow: hidden;
+  background-color: #f5f5f5;
 }
 
-.content-detail {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.content-detail.placeholder {
+.detail-card {
+  height: 100%;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.placeholder-text {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 18px;
-  text-align: center;
+:deep(.el-card__header) {
+  background: #fafafa;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 15px 20px;
 }
 
 .detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #333333;
+  font-size: 18px;
+  font-weight: bold;
 }
 
-.detail-header h2 {
-  color: white;
-  margin: 0;
-  font-size: 22px;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.desc-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.desc-label .el-icon {
-  font-size: 16px;
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
 }
 
 .content-text {
   white-space: pre-wrap;
   line-height: 1.6;
   padding: 10px 0;
+  color: #333333;
 }
 
-/* 保持原有的样式 */
-.detail-info {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 20px;
+.image-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .image-preview {
-  display: inline-block;
-  width: 150px;
-  height: 150px;
-  margin-right: 10px;
-  margin-bottom: 10px;
+  width: 120px;
+  height: 120px;
   border-radius: 4px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  border: 1px solid #e6e6e6;
 }
 
 .preview-image {
@@ -1502,50 +1527,16 @@ export default {
   justify-content: center;
   height: 100%;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #999999;
 }
 
-.reject-dialog .el-textarea {
-  width: 100%;
-}
-
-.reject-dialog .el-textarea :deep(textarea) {
-  min-height: 100px !important;
-}
-
-/* 回应区域样式 */
 .detail-comments {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 20px;
 }
 
-.comment-search-bar {
-  margin-bottom: 15px;
-}
-
-.comment-search-bar .el-input__wrapper {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  box-shadow: none;
-}
-
-.comment-search-bar .el-input__inner {
-  color: white;
-  background: transparent;
-}
-
-.comment-search-bar .el-input__inner::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.comment-search-bar .el-icon {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.comments-header h3 {
+.comments-section h3 {
   margin: 0 0 15px 0;
-  color: white;
+  color: #333333;
   font-size: 18px;
   font-weight: 600;
 }
@@ -1553,32 +1544,18 @@ export default {
 .comments-list {
   max-height: 300px;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 15px;
 }
 
 .comment-item {
-  padding: 12px 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
   margin-bottom: 10px;
-  transition: background 0.3s ease;
-}
-
-.comment-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.comment-item:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #fafafa;
+  border-radius: 4px;
+  border: 1px solid #e6e6e6;
 }
 
 .comment-content p {
   margin: 0 0 8px 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: #333333;
   line-height: 1.6;
   font-size: 14px;
   word-wrap: break-word;
@@ -1589,30 +1566,26 @@ export default {
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #666666;
 }
 
-.comment-time {
-  font-style: italic;
-}
-
-.no-comments {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.5);
-  padding: 25px;
-  font-style: italic;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-}
-
-/* 禁用图片预览时的鼠标滚轮控制滚动条 */
-.el-image-viewer__wrapper {
-  overscroll-behavior: none;
-}
-
-.dialog-footer {
+.content-detail.placeholder {
+  height: 100%;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-card {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+:deep(.el-empty__description) {
+  color: #999999 !important;
 }
 </style>
