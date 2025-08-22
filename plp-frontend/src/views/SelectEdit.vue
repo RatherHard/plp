@@ -773,7 +773,7 @@ export default {
 }
 
 .radio-item {
-  height: 60px;
+  height: 60px !important;
   padding: 15px;
   border-radius: 8px;
   border: 1px solid #e6e6e6;
