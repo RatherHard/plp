@@ -122,8 +122,8 @@ export default defineComponent({
 }
 
 .start-button {
-  width: calc(40% + 100px);
-  height: calc(53.33% + 150px);
+  width: 100%;
+  height: 100%;
   background: transparent;
   border: none;
   cursor: pointer;
