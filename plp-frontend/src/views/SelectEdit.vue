@@ -16,7 +16,7 @@
     
     <main class="main-content">
       <div class="content-layout">
-        <el-steps :active="activeStep" finish-status="success" simple>
+        <el-steps :active="activeStep" finish-status="success" simple class="steps-container">
           <el-step title="选择载体和类型" />
           <el-step title="编辑内容" />
         </el-steps>
@@ -24,43 +24,70 @@
         <div class="step-content">
           <!-- 步骤1：选择载体和类型 -->
           <div v-show="activeStep === 0" class="step-panel">
-            <h1 class="page-title">你要投出怎样的漂流瓶？</h1>
+            <div class="step-header">
+              <h1 class="page-title">你要投出怎样的漂流瓶？</h1>
+              <p class="page-subtitle">请选择合适的载体和幻想类型</p>
+            </div>
             
-            <!-- 第一个单选组：载体选择 -->
-            <div class="selection-group">
-              <div class="group-header">
-                <h2 class="group-title">请选择载体</h2>
-              </div>
+            <el-card class="selection-card">
+              <template #header>
+                <div class="card-header">
+                  <el-icon><Document /></el-icon>
+                  <span>请选择载体</span>
+                </div>
+              </template>
               
               <div class="radio-group">
-                <el-radio-group v-model="selectedCarrier">
+                <el-radio-group v-model="selectedCarrier" class="radio-group-vertical">
                   <el-tooltip class="item" effect="dark" content="普通的纸，随心畅写，他人可补充幻想的内容" placement="bottom">
-                    <el-radio label="牛皮纸" size="large">牛皮纸</el-radio>
+                    <el-radio label="牛皮纸" size="large" class="radio-item">
+                      <div class="radio-content">
+                        <div class="radio-title">牛皮纸</div>
+                        <div class="radio-description">可编辑内容，他人可补充</div>
+                      </div>
+                    </el-radio>
                   </el-tooltip>
                   <el-tooltip class="item" effect="dark" content="永恒的只读，扔出后内容不可再补充，他人仅可查阅、回应" placement="bottom">
-                    <el-radio label="永恒纸" size="large">永恒纸</el-radio>
+                    <el-radio label="永恒纸" size="large" class="radio-item">
+                      <div class="radio-content">
+                        <div class="radio-title">永恒纸</div>
+                        <div class="radio-description">只读内容，不可编辑</div>
+                      </div>
+                    </el-radio>
                   </el-tooltip>
                 </el-radio-group>
               </div>
-            </div>
+            </el-card>
             
-            <!-- 第二个单选组：幻想类型选择 -->
-            <div class="selection-group">
-              <div class="group-header">
-                <h2 class="group-title">请选择幻想类型</h2>
-              </div>
+            <el-card class="selection-card">
+              <template #header>
+                <div class="card-header">
+                  <el-icon><Lightning /></el-icon>
+                  <span>请选择幻想类型</span>
+                </div>
+              </template>
               
               <div class="radio-group">
-                <el-radio-group v-model="selectedFantasy">
+                <el-radio-group v-model="selectedFantasy" class="radio-group-vertical">
                   <el-tooltip class="item" effect="dark" content="你最多可以书写4000字的天马行空，不包含图片" placement="bottom">
-                    <el-radio label="空想" size="large">空想</el-radio>
+                    <el-radio label="空想" size="large" class="radio-item">
+                      <div class="radio-content">
+                        <div class="radio-title">空想</div>
+                        <div class="radio-description">纯文字内容，最多4000字</div>
+                      </div>
+                    </el-radio>
                   </el-tooltip>
                   <el-tooltip class="item" effect="dark" content="你最多可以书写8000字的天马行空，还要附上几张相关图片哦" placement="bottom">
-                    <el-radio label="联想" size="large">联想</el-radio>
+                    <el-radio label="联想" size="large" class="radio-item">
+                      <div class="radio-content">
+                        <div class="radio-title">联想</div>
+                        <div class="radio-description">图文并茂，最多8000字+图片</div>
+                      </div>
+                    </el-radio>
                   </el-tooltip>
                 </el-radio-group>
               </div>
-            </div>
+            </el-card>
             
             <!-- 操作按钮 -->
             <div class="step-actions">
@@ -69,15 +96,18 @@
                 size="large" 
                 @click="nextStep"
                 :disabled="!selectedCarrier || !selectedFantasy"
+                class="action-button"
               >
                 下一步
+                <el-icon><ArrowRight /></el-icon>
               </el-button>
               <el-button 
                 type="danger" 
                 size="large" 
                 @click="cancelSelection"
-                class="cancel-button"
+                class="action-button cancel-button"
               >
+                <el-icon><Close /></el-icon>
                 放弃
               </el-button>
             </div>
@@ -85,15 +115,29 @@
           
           <!-- 步骤2：编辑内容 -->
           <div v-show="activeStep === 1" class="step-panel">
+            <div class="step-header">
+              <h1 class="page-title">编辑漂流瓶内容</h1>
+              <p class="page-subtitle">请填写您的幻想内容</p>
+            </div>
+            
             <div class="content-display">
-              <div class="content-text">
-                <div class="content-tags">
-                  <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
-                  <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
-                </div>
+              <el-card class="content-card">
+                <template #header>
+                  <div class="card-header">
+                    <el-icon><Edit /></el-icon>
+                    <span>内容编辑</span>
+                    <div class="content-tags">
+                      <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
+                      <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
+                    </div>
+                  </div>
+                </template>
                 
                 <div class="editor-section">
-                  <div class="input-label">标题</div>
+                  <div class="input-label">
+                    <el-icon><Document /></el-icon>
+                    标题
+                  </div>
                   <el-input
                     v-model="displayTitle"
                     placeholder="请输入标题（不超过20字）"
@@ -104,7 +148,10 @@
                 </div>
                 
                 <div class="editor-section">
-                  <div class="input-label">正文</div>
+                  <div class="input-label">
+                    <el-icon><Document /></el-icon>
+                    正文
+                  </div>
                   <el-input
                     v-model="content.text"
                     type="textarea"
@@ -115,47 +162,59 @@
                     show-word-limit
                   />
                 </div>
-              </div>
-              
-              <div class="image-upload-section" v-if="showImageUpload">
-                <h3>上传图片</h3>
-                <el-upload
-                  class="image-uploader"
-                  action=""
-                  :auto-upload="false"
-                  :file-list="fileList"
-                  :on-change="handleFileChange"
-                  :on-remove="handleFileRemove"
-                  :on-preview="handlePreview"
-                  list-type="picture-card"
-                  :disabled="disableImageActions"
-                >
-                  <el-icon v-if="!disableImageActions"><Plus /></el-icon>
-                  <div class="el-upload__text" v-if="!disableImageActions">
-                    <em>点击上传</em>
-                  </div>
-                  <div class="el-upload__text" v-else>
-                    <em>仅可预览图片</em>
-                  </div>
-                </el-upload>
                 
-                <!-- 图片预览对话框 -->
-                <el-dialog v-model="previewDialogVisible" class="image-preview-dialog" :show-close="false">
-                  <template #header="{ close }">
-                    <div class="preview-header">
-                      <button class="close-button" @click="close">
-                        <el-icon><Close /></el-icon>
-                      </button>
+                <div class="image-upload-section" v-if="showImageUpload">
+                  <div class="input-label">
+                    <el-icon><Picture /></el-icon>
+                    上传图片
+                  </div>
+                  <el-upload
+                    class="image-uploader"
+                    action=""
+                    :auto-upload="false"
+                    :file-list="fileList"
+                    :on-change="handleFileChange"
+                    :on-remove="handleFileRemove"
+                    :on-preview="handlePreview"
+                    list-type="picture-card"
+                    :disabled="disableImageActions"
+                  >
+                    <el-icon v-if="!disableImageActions"><Plus /></el-icon>
+                    <div class="el-upload__text" v-if="!disableImageActions">
+                      <em>点击上传</em>
                     </div>
-                  </template>
-                  <img :src="previewImageUrl" class="preview-image" />
-                </el-dialog>
-              </div>
+                    <div class="el-upload__text" v-else>
+                      <em>仅可预览图片</em>
+                    </div>
+                  </el-upload>
+                  
+                  <!-- 图片预览对话框 -->
+                  <el-dialog v-model="previewDialogVisible" class="image-preview-dialog" :show-close="false">
+                    <template #header="{ close }">
+                      <div class="preview-header">
+                        <button class="close-button" @click="close">
+                          <el-icon><Close /></el-icon>
+                        </button>
+                      </div>
+                    </template>
+                    <img :src="previewImageUrl" class="preview-image" />
+                  </el-dialog>
+                </div>
+              </el-card>
               
               <div class="editor-actions">
-                <el-button @click="prevStep">上一步</el-button>
-                <el-button type="primary" @click="saveContent">保存</el-button>
-                <el-button type="danger" @click="showCancelDialog">放弃</el-button>
+                <el-button @click="prevStep" class="action-button">
+                  <el-icon><ArrowLeft /></el-icon>
+                  上一步
+                </el-button>
+                <el-button type="primary" @click="saveContent" class="action-button">
+                  <el-icon><Check /></el-icon>
+                  保存
+                </el-button>
+                <el-button type="danger" @click="showCancelDialog" class="action-button">
+                  <el-icon><Close /></el-icon>
+                  放弃
+                </el-button>
               </div>
             </div>
           </div>
@@ -203,7 +262,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, Close } from '@element-plus/icons-vue'
+import { Plus, Close, ArrowRight, ArrowLeft, Check, Document, Lightning, Picture, Edit } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, ElSteps, ElStep } from 'element-plus'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
@@ -216,6 +275,13 @@ export default {
     FooterComponent,
     Plus,
     Close,
+    ArrowRight,
+    ArrowLeft,
+    Check,
+    Document,
+    Lightning,
+    Picture,
+    Edit,
     ElSteps,
     ElStep
   },
@@ -640,13 +706,18 @@ export default {
 }
 
 .content-layout {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(10px);
+}
+
+.steps-container {
+  margin-bottom: 30px;
 }
 
 .step-content {
@@ -654,57 +725,111 @@ export default {
 }
 
 .step-panel {
-  padding: 20px 0;
+  padding: 10px 0;
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 .page-title {
-  text-align: center;
-  margin-bottom: 30px;
+  margin: 0 0 10px 0;
   color: #333;
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: 600;
 }
 
-.selection-group {
-  margin-bottom: 30px;
+.page-subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
 }
 
-.group-header {
+.selection-card {
+  margin-bottom: 25px;
+  border-radius: 10px;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
-}
-
-.group-title {
-  margin: 0;
-  color: #333;
+  font-weight: 600;
   font-size: 18px;
-  flex-grow: 1;
+  color: #333;
 }
 
-.radio-group {
-  padding: 15px 0;
+.card-header .el-icon {
+  margin-right: 10px;
+  font-size: 20px;
 }
 
-.radio-group :deep(.el-radio) {
-  display: block;
-  margin-bottom: 10px;
+.radio-group-vertical {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
 }
 
-.radio-group :deep(.el-radio__label) {
-  font-size: 16px;
-  color: #555;
+.radio-item {
+  height: 60px;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e6e6e6;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.radio-item:hover {
+  border-color: #409eff;
+  background-color: #f0f9ff;
+}
+
+:deep(.radio-item .el-radio__input) {
+  float: right;
+  margin-left: 15px;
+}
+
+.radio-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.radio-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-description {
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .step-actions {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
   margin-top: 30px;
 }
 
-.step-actions :deep(.el-button) {
-  font-size: 18px;
-  padding: 20px 40px;
-  border-radius: 10px;
-  margin: 0 10px;
+.action-button {
+  font-size: 16px;
+  padding: 15px 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .cancel-button {
@@ -712,15 +837,45 @@ export default {
   border-color: #f56c6c;
 }
 
+.content-card {
+  margin-bottom: 25px;
+  border-radius: 10px;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.content-card .card-header {
+  justify-content: space-between;
+}
+
 .content-tags {
-  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
 }
 
 .content-tags .tag {
-  margin-right: 10px;
+  margin: 0;
 }
 
 .editor-section {
+  margin-bottom: 25px;
+}
+
+.input-label {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.input-label .el-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.title-editor {
   margin-bottom: 20px;
 }
 
@@ -729,7 +884,7 @@ export default {
 }
 
 .image-upload-section {
-  margin: 15px 0;
+  margin: 25px 0;
 }
 
 .image-uploader {
@@ -740,13 +895,7 @@ export default {
   display: flex;
   justify-content: center;
   gap: 20px;
-  padding: 30px 0;
-}
-
-.editor-actions :deep(.el-button) {
-  font-size: 16px;
-  padding: 15px 30px;
-  border-radius: 8px;
+  padding: 20px 0;
 }
 
 .dialog-footer {
@@ -754,8 +903,9 @@ export default {
 }
 
 .instructions {
-  line-height: 1.6;
+  line-height: 1.8;
   color: #333;
+  font-size: 16px;
 }
 
 .image-preview-dialog :deep(.el-dialog__body) {
@@ -801,20 +951,8 @@ export default {
   color: #666;
 }
 
-.input-label {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #333;
-}
-
-.title-editor {
-  margin-bottom: 20px;
-}
-
-.content-text .title-editor :deep(.el-input__inner) {
-  font-size: 14px;
-  padding: 12px;
-  text-align: left;
+:deep(.el-radio__label) {
+  width: 100%;
+  padding-right: 30px;
 }
 </style>
