@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import View from '../views/View.vue'
-import Edit from '../views/Edit.vue'
 import Manager from '../views/Manager.vue'
-import Select from '../views/Select.vue'
+import SelectEdit from '../views/SelectEdit.vue'
 import Introduction from '../views/Introduction.vue'
 import AdminInit from '../views/AdminInit.vue'
 
@@ -21,19 +20,14 @@ const routes = [
     component: View
   },
   {
-    path: '/edit',
+    path: '/select-edit',
     name: 'Edit',
-    component: Edit
+    component: SelectEdit
   },
   {
     path: '/manager',
     name: 'Manager',
     component: Manager
-  },
-  {
-    path: '/select',
-    name: 'Select',
-    component: Select
   },
   {
     path: '/introduction',

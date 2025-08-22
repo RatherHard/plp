@@ -146,9 +146,9 @@ export default defineComponent({
       changeVideo('/videos/CheckCheckBottle.mp4', false)
     }
     
-    // 跳转到/select页面
+    // 跳转到/select-edit页面
     const goToSelect = () => {
-      router.push('/select')
+      router.push('/select-edit')
     }
     
     // 跳转到查看页面
