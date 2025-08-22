@@ -1216,7 +1216,7 @@ export default {
           headers['Authorization'] = 'Bearer ' + token
         }
         
-        const response = await fetch(`${API_ENDPOINTS.records}/${selectedItem.value.id}/review`, {
+        const response = await fetch(`${API_ENDPOINTS.comments}/${selectedItem.value.id}/review`, {
           method: 'POST',
           headers,
           body: JSON.stringify({
