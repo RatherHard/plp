@@ -31,22 +31,26 @@
       });
       
       function checkForUpdates() {
-        // 发送HEAD请求检查index.html是否有更新
-        fetch(window.location.href, { 
-          method: 'HEAD',
+        // 获取版本信息检查是否有更新
+        fetch('/version.json', { 
+          method: 'GET',
           cache: 'no-cache'
-        }).then(response => {
-          const lastModified = response.headers.get('Last-Modified');
-          if (lastModified) {
-            const lastModifiedTime = new Date(lastModified).getTime();
-            const currentTime = new Date().getTime();
-            // 如果文件在最近1分钟内被修改，则重新加载页面
-            if (currentTime - lastModifiedTime < 60 * 1000) {
-              console.log('检测到新版本，正在刷新页面...');
-              window.location.reload(true);
-            }
+        })
+        .then(response => response.json())
+        .then(versionInfo => {
+          const currentCommitId = versionInfo.commitId;
+          const localCommitId = localStorage.getItem('commitId');
+          
+          // 如果commit ID不同，则刷新页面
+          if (localCommitId && localCommitId !== currentCommitId) {
+            console.log('检测到新版本，正在刷新页面...');
+            localStorage.setItem('commitId', currentCommitId);
+            window.location.reload(true);
+          } else {
+            localStorage.setItem('commitId', currentCommitId);
           }
-        }).catch(err => {
+        })
+        .catch(err => {
           console.log('检查更新失败:', err);
         });
       }

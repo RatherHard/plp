@@ -5,8 +5,20 @@ import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
 
-// 添加应用版本号
-const APP_VERSION = '1.0.' + Date.now();
+// 应用版本信息将从version.json获取
+let APP_VERSION = 'unknown';
+
+// 异步获取版本信息
+fetch('/version.json')
+  .then(response => response.json())
+  .then(versionInfo => {
+    APP_VERSION = versionInfo.commitId;
+    console.log('应用版本:', APP_VERSION);
+  })
+  .catch(err => {
+    console.error('获取版本信息失败:', err);
+    APP_VERSION = 'unknown';
+  });
 
 console.log('开始初始化应用...')
 
@@ -25,7 +37,7 @@ try {
   // 挂载应用
   app.mount('#app')
   
-  console.log('应用初始化完成，版本:', APP_VERSION)
+  console.log('应用初始化完成')
   
   // 检查版本更新
   window.CHECK_VERSION = function() {
