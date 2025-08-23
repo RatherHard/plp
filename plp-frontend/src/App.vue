@@ -20,35 +20,65 @@ export default {
     
     // 检查应用版本
     const checkAppVersion = () => {
-      // 发送请求检查是否有新版本
-      fetch('/', { 
+      // 获取当前版本信息
+      fetch('/version.json', { 
         method: 'GET',
         cache: 'no-cache',
         headers: {
           'Cache-Control': 'no-cache'
         }
       })
-      .then(response => {
-        const lastModified = response.headers.get('Last-Modified');
-        if (lastModified) {
-          const serverModifiedTime = new Date(lastModified).getTime();
-          const localVisitTime = localStorage.getItem('lastVisitTime');
-          
-          // 如果服务器文件比上次访问时间更新，则刷新页面
-          if (!localVisitTime || serverModifiedTime > parseInt(localVisitTime)) {
-            console.log('检测到新版本，正在刷新页面...');
-            localStorage.setItem('lastVisitTime', Date.now().toString());
-            // 延迟刷新以确保localStorage更新完成
-            setTimeout(() => {
-              window.location.reload(true);
-            }, 100);
-          } else {
-            localStorage.setItem('lastVisitTime', Date.now().toString());
-          }
+      .then(response => response.json())
+      .then(versionInfo => {
+        const currentCommitId = versionInfo.commitId;
+        console.log('当前版本信息:', versionInfo);
+        const localCommitId = localStorage.getItem('commitId');
+        
+        // 如果commit ID不同，则刷新页面
+        if (localCommitId && localCommitId !== currentCommitId) {
+          console.log('检测到新版本，正在刷新页面...');
+          localStorage.setItem('commitId', currentCommitId);
+          // 延迟刷新以确保localStorage更新完成
+          setTimeout(() => {
+            window.location.reload(true);
+          }, 100);
+        } else {
+          localStorage.setItem('commitId', currentCommitId);
         }
       })
       .catch(err => {
         console.log('检查更新失败:', err);
+        
+        // fallback到原来的时间戳方式
+        fetch('/', { 
+          method: 'GET',
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
+        .then(response => {
+          const lastModified = response.headers.get('Last-Modified');
+          if (lastModified) {
+            const serverModifiedTime = new Date(lastModified).getTime();
+            const localVisitTime = localStorage.getItem('lastVisitTime');
+            
+            // 如果服务器文件比上次访问时间更新，则刷新页面
+            if (!localVisitTime || serverModifiedTime > parseInt(localVisitTime)) {
+              console.log('检测到新版本，正在刷新页面...');
+              localStorage.setItem('lastVisitTime', Date.now().toString());
+              // 延迟刷新以确保localStorage更新完成
+              setTimeout(() => {
+                window.location.reload(true);
+              }, 100);
+            } else {
+              localStorage.setItem('lastVisitTime', Date.now().toString());
+            }
+          }
+        })
+        .catch(err => {
+          console.log('检查更新失败:', err);
+        });
       });
     };
     
