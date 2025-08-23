@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 防止浏览器缓存页面 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>幻想漂流瓶</title>
   </head>
   <body>
@@ -20,9 +24,32 @@
         console.error('全局错误:', e.error);
       });
       
-      window.addEventListener('unhandledrejection', function(e) {
-        console.error('未处理的Promise拒绝:', e.reason);
+      // 检查是否有新版本
+      window.addEventListener('load', function() {
+        // 每5分钟检查一次更新
+        setInterval(checkForUpdates, 5 * 60 * 1000);
       });
+      
+      function checkForUpdates() {
+        // 发送HEAD请求检查index.html是否有更新
+        fetch(window.location.href, { 
+          method: 'HEAD',
+          cache: 'no-cache'
+        }).then(response => {
+          const lastModified = response.headers.get('Last-Modified');
+          if (lastModified) {
+            const lastModifiedTime = new Date(lastModified).getTime();
+            const currentTime = new Date().getTime();
+            // 如果文件在最近1分钟内被修改，则重新加载页面
+            if (currentTime - lastModifiedTime < 60 * 1000) {
+              console.log('检测到新版本，正在刷新页面...');
+              window.location.reload(true);
+            }
+          }
+        }).catch(err => {
+          console.log('检查更新失败:', err);
+        });
+      }
     </script>
   </body>
 </html>
