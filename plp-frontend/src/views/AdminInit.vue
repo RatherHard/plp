@@ -1,7 +1,9 @@
 <template>
   <div class="admin-init-container">
     <HeaderComponent/>
-    
+
+    <VideoBackground />
+
     <div class="manager-container">
   
       <main class="main-content">
@@ -210,7 +212,6 @@ export default {
         
     onMounted(() => {
       checkInitialization()
-      setVideoBackground()
     })
     
     return {
