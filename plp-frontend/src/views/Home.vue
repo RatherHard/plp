@@ -1,6 +1,6 @@
 <template>
   <div class="home-container">
-    <HeaderComponent @show-instructions="showInstructions" />
+    <HeaderComponent/>
     
     <VideoBackground :video-path="currentVideo" />
     

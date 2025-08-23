@@ -1,6 +1,6 @@
 <template>
   <div class="select-edit-container">
-    <HeaderComponent @show-instructions="showInstructions" />
+    <HeaderComponent/>
     
     <VideoBackground />
     
@@ -578,12 +578,7 @@ export default {
         ElMessage.info('已取消放弃操作')
       })
     }
-    
-    // 显示网站说明弹窗
-    const showInstructions = () => {
-      dialogVisible.value = true
-    }
-    
+
     return {
       activeStep,
       selectedCarrier,
@@ -604,7 +599,6 @@ export default {
       previewDialogVisible,
       previewImageUrl,
       cancelDialogVisible,
-      showInstructions,
       instructionsText,
       carrierTag,
       fantasyTag,

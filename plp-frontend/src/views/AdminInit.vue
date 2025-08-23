@@ -1,6 +1,6 @@
 <template>
   <div class="admin-init-container">
-    <HeaderComponent @show-instructions="showInstructions" />
+    <HeaderComponent/>
     
     <div class="manager-container">
   
@@ -207,11 +207,6 @@ export default {
       successDialogVisible.value = false
       router.push('/manager')
     }
-    
-    // 显示说明
-    const showInstructions = () => {
-      // 可以添加说明逻辑
-    }
         
     onMounted(() => {
       checkInitialization()
@@ -228,7 +223,6 @@ export default {
       errorMessage,
       handleInit,
       goToManager,
-      showInstructions
     }
   }
 }

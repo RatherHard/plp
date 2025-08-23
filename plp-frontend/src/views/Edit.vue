@@ -465,11 +465,6 @@ export default {
       })
     }
     
-    // 显示网站说明弹窗
-    const showInstructions = () => {
-      dialogVisible.value = true
-    }
-    
     return {
       content,
       displayTitle,

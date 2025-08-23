@@ -1,6 +1,6 @@
 <template>
   <div class="view-container">
-    <HeaderComponent @show-instructions="showInstructions" @go-home="goHome" />
+    <HeaderComponent/>
     
     <VideoBackground />
     
@@ -622,11 +622,6 @@ export default {
         ElMessage.info('已取消扔出操作')
       })
     }
-    
-    // 显示网站说明弹窗
-    const showInstructions = () => {
-      dialogVisible.value = true
-    }
 
     // 从服务器获取随机内容
     const fetchRandomContent = async () => {
@@ -862,7 +857,6 @@ export default {
       goToEdit,
       throwBottle,
       dialogVisible,
-      showInstructions,
       instructionsText,
       carrierTag,
       fantasyTag,
