@@ -122,7 +122,6 @@
 import { ref, computed } from 'vue'
 import { Plus, Close, Document, Picture, Edit, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { validateImageFile, readFileAsBase64 } from '../utils'
 
 export default {
   name: 'BottleEditor',
@@ -215,17 +214,35 @@ export default {
     }
     
     // 文件上传处理函数
-    const handleFileChange = async (file, fileList) => {
+    const handleFileChange = (file, fileList) => {
       // 确保 fileList.value 存在
       if (!fileList.value || !Array.isArray(fileList.value)) {
         fileList.value = [];
       }
       
-      // 验证文件
-      const validation = validateImageFile(file.raw);
-      if (!validation.valid) {
-        ElMessage.error(validation.message);
+      // 检查文件是否为图片格式
+      const isImage = file.raw.type.startsWith('image/');
+      if (!isImage) {
+        ElMessage.error('只能上传图片文件!');
         // 从文件列表中移除无效文件
+        const index = fileList.value.findIndex(f => f.uid === file.uid);
+        if (index !== -1) {
+          fileList.value.splice(index, 1);
+        }
+        // 同时从内容中移除（通过索引匹配）
+        if (index !== -1 && index < content.value.images.length) {
+          content.value.images.splice(index, 1);
+        }
+        // 更新文件列表以刷新显示
+        updateFileList();
+        return;
+      }
+      
+      // 检查文件大小（限制为10MB）
+      const isLt10M = file.raw.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        ElMessage.error('图片大小不能超过 10MB!');
+        // 从文件列表中移除过大的文件
         const index = fileList.value.findIndex(f => f.uid === file.uid);
         if (index !== -1) {
           fileList.value.splice(index, 1);
@@ -256,16 +273,17 @@ export default {
         return;
       }
       
-      try {
-        // 读取文件为Base64
-        const imageData = await readFileAsBase64(file.raw);
+      // 创建 FileReader 实例
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
         // 添加到内容中
-        content.value.images.push(imageData);
+        content.value.images.push(e.target.result);
         // 更新文件列表以刷新显示
         updateFileList();
-      } catch (error) {
-        ElMessage.error('文件读取失败');
-      }
+      };
+      
+      reader.readAsDataURL(file.raw);
     }
     
     const handleFileRemove = (file, fileList) => {

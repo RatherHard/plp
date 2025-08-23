@@ -181,10 +181,10 @@ import {
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
 import store from '../store'
-import { API_ENDPOINTS } from '../api'
 import VideoBackground from '../components/VideoBackground.vue'
-import { formatTime, getCarrierTag, getFantasyTag, getExistTag } from '../utils'
-
+import { formatTime } from '../utils/time'
+import { getCarrierTag, getFantasyTag, getExistTag } from '../utils/bottle'
+import { API_ENDPOINTS } from '../api'
 
 export default {
   name: 'View',
@@ -204,236 +204,639 @@ export default {
   setup() {
     const router = useRouter()
     const dialogVisible = ref(false)
-    const content = ref(store.getContent())
-    const images = ref(content.value.images || [])
-    const comments = ref([])
     const newComment = ref('')
-    const imageLoadStatus = ref({})
+    const comments = ref([])
+    const imageLoadStatus = ref({})  // 图片加载状态
+    
+    // 使用共享状态中的内容
+    const content = computed(() => store.getContent())
+    
+    const images = computed(() => {
+      const imgs = content.value.images
+      // 确保返回的是数组，即使为空也返回空数组
+      return Array.isArray(imgs) ? imgs : []
+    })
+    
+    // 判断是否应该显示图片区域（fantasy不为0时显示）
+    const showImages = computed(() => {
+      const bottleContent = store.getContent()
+      const fantasy = bottleContent && bottleContent.fantasy !== undefined ? bottleContent.fantasy : 1
+      return fantasy !== 0
+    })
+    
+    // 初始化图片加载状态
+    const initImageLoadStatus = (imageCount) => {
+      const status = {}
+      for (let i = 0; i < imageCount; i++) {
+        status[i] = {
+          loaded: false,
+          error: false,
+          progress: 0,
+          retryCount: 0,
+          src: null
+        }
+      }
+      return status
+    }
+    
+    
+    // 监听images变化，初始化加载状态
+    watch(images, (newImages) => {
+      imageLoadStatus.value = initImageLoadStatus(newImages.length)
+    }, { immediate: true })
+    
+    // 在组件挂载时初始化加载状态
+    onMounted(() => {
+      if (images.value.length > 0) {
+        imageLoadStatus.value = initImageLoadStatus(images.value.length)
+      }
+    })
     
     // 获取网站说明文本
     const instructionsText = computed(() => store.getInstructionsText())
-    
-    // 计算载体标签显示内容
+
+    // 检查视频文件是否存在，如果不存在则使用默认颜色背景
+    // 根据存储的参数计算显示标签
     const carrierTag = computed(() => {
-      try {
-        const carrier = content.value && content.value.carrier !== undefined ? content.value.carrier : 0;
-        return getCarrierTag(carrier);
-      } catch (e) {
-        return getCarrierTag(0);
+      // 从共享状态获取载体信息，如果不存在则默认为平凡纸(0)
+      const bottleContent = store.getContent()
+      const carrier = bottleContent && bottleContent.carrier !== undefined ? bottleContent.carrier : 0
+      
+      // 根据载体代码返回显示文本和标签类型
+      return {
+        text: carrier === 0 ? '牛皮纸' : '永恒纸',
+        type: carrier === 0 ? 'primary' : 'success'
       }
     })
     
-    // 计算幻想类型标签显示内容
     const fantasyTag = computed(() => {
-      try {
-        const fantasy = content.value && content.value.fantasy !== undefined ? content.value.fantasy : 0;
-        return getFantasyTag(fantasy);
-      } catch (e) {
-        return getFantasyTag(0);
+      // 从共享状态获取幻想类型信息，如果不存在则默认为联想(1)
+      const bottleContent = store.getContent()
+      const fantasy = bottleContent && bottleContent.fantasy !== undefined ? bottleContent.fantasy : 1
+      
+      // 根据幻想类型代码返回显示文本和标签类型
+      return {
+        text: fantasy === 0 ? '空想' : '联想',
+        type: fantasy === 0 ? 'warning' : 'info'
       }
     })
     
-    // 计算存续时间标签显示内容
+    // 根据存续时间计算漂流瓶状态标签
     const existTag = computed(() => {
-      try {
-        const exist = store.getExist();
-        return getExistTag(exist);
-      } catch (e) {
-        return getExistTag(null);
-      }
+      // 从store获取存续时间
+      const exist = store.getExist()
+      
+      // 使用工具函数计算标签
+      return getExistTag(exist)
     })
     
-    // 是否显示图片
-    const showImages = computed(() => {
-      try {
-        const fantasy = content.value && content.value.fantasy !== undefined ? content.value.fantasy : 1;
-        return fantasy !== 0;
-      } catch (e) {
-        return true;
-      }
-    })
-    
-    // 格式化时间显示
-    const formatTimeDisplay = (time) => {
-      return formatTime(time);
+    // 图片加载处理函数
+    const handleImageLoad = (e) => {
+      console.log('图片加载成功')
     }
     
-    // 获取漂流瓶数据
-    const fetchBottleData = async () => {
-      try {
-        // 如果是新创建的内容，不需要从服务器获取
-        if (store.getFirstFetch() === 0) {
+    const handleImageError = (e) => {
+      console.error('图片加载失败:', e)
+    }
+    
+    // 图片加载进度处理
+    const handleImageProgress = (index) => (event) => {
+      if (event.lengthComputable && imageLoadStatus.value) {
+        const progress = Math.round((event.loaded / event.total) * 100)
+        if (!imageLoadStatus.value[index]) {
+          // 确保索引存在
+          imageLoadStatus.value[index] = {
+            loaded: false,
+            error: false,
+            progress: 0,
+            retryCount: 0,
+            src: null
+          }
+        }
+        imageLoadStatus.value[index] = {
+          ...imageLoadStatus.value[index],
+          progress: progress
+        }
+      }
+    }
+    
+    // 重试加载图片
+    const retryImageLoad = (index) => {
+      if (!imageLoadStatus.value[index]) return
+      
+      const maxRetries = 3
+      let currentStatus = imageLoadStatus.value[index]
+      
+      if (currentStatus.retryCount >= maxRetries) {
+        ElMessage.warning(`已达到最大重试次数(${maxRetries})`)
+        return
+      }
+      
+      // 重置状态
+      currentStatus = {
+        ...currentStatus,
+        loaded: false,
+        error: false,
+        progress: 0,
+        retryCount: currentStatus.retryCount + 1
+      }
+      
+      // 强制刷新图片
+      const img = new Image()
+      img.src = currentStatus.src + (currentStatus.src.includes('?') ? '&' : '?') + 't=' + Date.now()
+      
+      // 重置状态
+      imageLoadStatus.value = {
+        ...imageLoadStatus.value
+      }
+    }
+    
+    const goToEdit = () => {
+      router.push('/edit')
+    }
+    
+    // 修改扔出按钮功能，添加确认弹窗
+    const throwBottle = () => {
+      ElMessageBox.confirm(
+        '确定要扔出这个漂流瓶吗？扔出后将无法再编辑。',
+        '确认扔出',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      )
+      .then(async () => {
+        // 检查ifEdit状态，决定是否真正发送数据到服务器
+        const ifEdit = store.getIfEdit();
+        
+        // 获取source状态
+        const source = store.getSource();
+        
+        // 如果ifEdit为0，则假装成功投出但不向服务器发送数据
+        if (ifEdit === 0) {
+          // 检查source是否为0，如果是则拒绝假装扔出
+          if (source === 0) {
+          ElMessageBox.alert(
+            '请先编辑内容！！！！！',
+            '操作拒绝',
+            { 
+              confirmButtonText: '确定',
+              type: 'warning'
+            }
+          );
+        return;
+      }
+          console.log('内容未编辑，假装成功投出');
+          
+          // 显示成功弹窗
+          ElMessageBox.alert('漂流瓶将飘向下一个人~', '扔出成功', {
+            confirmButtonText: '确定',
+            type: 'success',
+            showClose: false  // 禁用右上角关闭按钮，确保用户必须点击确定按钮
+          }).then(() => {
+            // 弹窗确认后清除本地数据
+            store.clearLocalStorage(); // 使用新的方法彻底清除本地存储
+              
+            // 明确重置共享状态为默认值
+            store.clearAll();
+              
+            // 重置ifEdit状态
+            store.updateIfEdit(0);
+              
+            // 清除密钥
+            store.clearKey();
+              
+            // 返回主页
+            router.push('/')
+          })
           return;
         }
         
-        const response = await fetch(API_ENDPOINTS.records + '/' + store.getId());
-        if (response.ok) {
-          const data = await response.json();
-          content.value = data;
-          images.value = data.images || [];
-        } else {
-          ElMessage.error('获取漂流瓶内容失败');
+        // 当source为1时不获取上传密钥
+        let uploadKey = null;
+        if (source !== 1) {
+          // 获取上传密钥
+          try {
+            const keyResponse = await fetch(API_ENDPOINTS.getKey);
+            if (keyResponse.ok) {
+              const keyData = await keyResponse.json();
+              uploadKey = keyData.key;
+              // 保存密钥到共享状态
+              store.updateKey(uploadKey);
+            } else {
+              // 获取密钥失败，显示服务器返回的错误信息
+              const errorText = await keyResponse.text();
+              ElMessageBox.alert(`获取上传密钥失败: ${errorText}`, '获取密钥失败', {
+                confirmButtonText: '确定',
+                type: 'error',
+              });
+              return;
+            }
+          } catch (error) {
+            console.error('获取上传密钥时出错:', error);
+            ElMessageBox.alert('网络错误，无法获取上传密钥', '获取密钥失败', {
+              confirmButtonText: '确定',
+              type: 'error',
+            });
+            return;
+          }
         }
-      } catch (error) {
-        ElMessage.error('网络错误，获取漂流瓶内容失败');
-      }
+        
+        // 用户确认扔出，将数据传输到服务器
+        const content = store.getContent();
+        
+        // 创建FormData对象用于multipart/form-data上传
+        const formData = new FormData();
+        const formData_ = new FormData();
+        
+        // 添加文本内容到FormData
+        formData.append('text', content.text);
+        formData_.append('text', content.text);
+        
+        // 添加标题到FormData
+        formData.append('title', content.title || '');
+        formData_.append('title', content.title || '');
+        
+        // 添加密钥到FormData（仅当source不为1时）
+        if (source !== 1) {
+          formData.append('key', uploadKey);
+        }
+        
+        // 添加载体类型到FormData
+        // 从localStorage获取载体信息，如果不存在则默认为牛皮纸(0)
+        const bottleData = localStorage.getItem('bottleContent');
+        let carrier = 0;
+        if (bottleData) {
+          try {
+            const parsed = JSON.parse(bottleData);
+            carrier = parsed.carrier !== undefined ? parsed.carrier : 0;
+          } catch (e) {
+            console.error('解析载体信息失败:', e);
+          }
+        }
+        formData.append('carrier', carrier);
+        
+        // 添加所有图片到FormData（支持0张或多张）
+        if (content.images && content.images.length > 0) {
+          content.images.forEach((image, index) => {
+            // 检查是否为Base64数据
+            if (image.startsWith('data:')) {
+              // 将Base64图片转换为Blob对象
+              const base64toBlob = (base64Data, contentType = '', sliceSize = 512) => {
+                const byteCharacters = atob(base64Data.split(',')[1]);
+                const byteArrays = [];
+                
+                for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                  const slice = byteCharacters.slice(offset, offset + sliceSize);
+                  
+                  const byteNumbers = new Array(slice.length);
+                  for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                  }
+                  
+                  const byteArray = new Uint8Array(byteNumbers);
+                  byteArrays.push(byteArray);
+                }
+                
+                const blob = new Blob(byteArrays, { type: contentType });
+                return blob;
+              };
+              
+              // 提取Base64数据中的MIME类型
+              let mimeType = 'image/png';
+              const mimeMatch = image.match(/^data:(image\/[^;]+);base64,/);
+              if (mimeMatch && mimeMatch[1]) {
+                mimeType = mimeMatch[1];
+              }
+              
+              // 将Base64转换为Blob
+              const imageBlob = base64toBlob(image, mimeType);
+              
+              // 添加到FormData
+              formData.append('images', imageBlob, `bottle-image-${index}.png`);
+              formData_.append('images', imageBlob, `bottle-image-${index}.png`);
+            } else {
+              // 如果不是Base64数据，可能需要其他处理方式
+              // 这里假设是URL或其他格式，可能需要根据实际情况调整
+              console.warn('图片不是Base64格式，可能需要特殊处理');
+            }
+          });
+        }
+        
+        // 发送POST请求到服务器
+        // 根据source和ifEdit状态决定使用哪个API端点
+        const if_Edit = store.getIfEdit();
+        const id = store.getId();
+        
+        let uploadUrl = API_ENDPOINTS.upload;
+        let method = 'POST'; // 默认使用POST方法
+        let formData__ = formData;
+        if (source === 1 && if_Edit === 1) {
+          // 如果source为1且ifEdit为1，则使用record端点和PUT方法
+          uploadUrl = `${API_ENDPOINTS.records}/${id}`;
+          method = 'PUT'; // 使用PUT方法更新记录
+          formData__ = formData_;
+        }
+        
+        fetch(uploadUrl, {
+          method: method,
+          body: formData__
+        })
+        .then(response => {
+          if (response.ok) {
+            console.log('漂流瓶数据已成功传输到服务器');
+            
+            // 显示成功弹窗
+            ElMessageBox.alert('漂流瓶已成功扔出！', '扔出成功', {
+              confirmButtonText: '确定',
+              type: 'success',
+            }).then(() => {
+              // 弹窗确认后清除本地数据
+              store.clearLocalStorage(); // 使用新的方法彻底清除本地存储
+              
+              // 明确重置共享状态为默认值
+              store.clearAll();
+              
+              // 重置ifEdit状态
+              store.updateIfEdit(0);
+              
+              // 清除密钥
+              store.clearKey();
+              
+              // 返回主页
+              router.push('/')
+            })
+          } else {
+            console.error('服务器返回错误:', response.status);
+            // 显示失败弹窗并停留在本页面
+            ElMessageBox.alert('数据传输失败，请稍后重试', '扔出失败', {
+              confirmButtonText: '确定',
+              type: 'error',
+            })
+          }
+        })
+        .catch(error => {
+          console.error('传输数据到服务器时出错:', error);
+          // 显示失败弹窗并停留在本页面
+          ElMessageBox.alert('网络错误，数据传输失败', '扔出失败', {
+            confirmButtonText: '确定',
+            type: 'error',
+          })
+        });
+      })
+      .catch(() => {
+        // 用户取消操作
+        ElMessage.info('已取消扔出操作')
+      })
     }
-    
-    // 获取评论数据
-    const fetchComments = async () => {
+
+    // 从服务器获取随机内容
+    const fetchRandomContent = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.comments + '/' + store.getId());
+        const response = await fetch(API_ENDPOINTS.getRandom)
         if (response.ok) {
-          const data = await response.json();
-          comments.value = data;
+          const data = await response.json()
+          
+          // 更新ID
+          if (data.id) {
+            store.updateId(data.id)
+          }
+          
+          // 更新共享状态
+          if (data.text) {
+            store.updateText(data.text)
+          }
+          
+          // 特别处理图片数据
+          if (data.images && Array.isArray(data.images)) {
+            // 确保图片URL是有效的
+            const validImages = data.images.filter(image => {
+              // 简单验证图片URL是否有效
+              return typeof image === 'string' && image.length > 0
+            })
+            store.updateImages(validImages)
+          } else if (data.filenames && Array.isArray(data.filenames)) {
+            // 如果有filenames数组，则为每个文件名构建图片URL
+            const imageUrls = data.filenames.map(filename => 
+              `${API_ENDPOINTS.uploads}${filename}`
+            )
+            store.updateImages(imageUrls)
+          } else if (data.filename) {
+            // 如果有filename字段，则构建图片URL
+            const imageUrl = `${API_ENDPOINTS.uploads}${data.filename}`
+            store.updateImages([imageUrl])
+          } else {
+            // 如果没有图片数据，确保清空图片列表
+            store.updateImages([])
+          }
+          
+          // 更新上传时间
+          if (data.uploadTime) {
+            store.updateUploadTime(data.uploadTime)
+            
+            // 计算帖子存续时间
+            // 获取上传时间的前10个字符（格式为XXXX-XX-XX表示年-月-日）
+            const uploadDateStr = data.uploadTime.substring(0, 10)
+            const uploadDate = new Date(uploadDateStr)
+            const currentDate = new Date()
+            
+            // 计算两个日期之间的天数差
+            const timeDiff = currentDate.getTime() - uploadDate.getTime()
+            const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24))
+            
+            // 更新存续时间到共享状态
+            store.updateExist(daysDiff)
+          }
+          
+          // 更新标题
+          if (data.title) {
+            store.updateTitle(data.title)
+          }
+          
+          // 更新幻想类型(fantasy)
+          if (data.fantasy !== undefined && data.fantasy !== null) {
+            store.updateFantasy(data.fantasy)
+          } else {
+            // 如果服务器未返回fantasy字段，则默认为联想（1）
+            store.updateFantasy(1)
+          }
+          
+          // 更新载体类型(carrier)
+          if (data.carrier !== undefined && data.carrier !== null) {
+            store.updateCarrier(data.carrier)
+          } else {
+            // 如果服务器未返回carrier字段，则默认为牛皮纸（0）
+            store.updateCarrier(0)
+          }
+          
+          // 设置来源为来自他人
+          store.updateSource(1)
+          
+          ElMessage.success('内容加载成功')
         } else {
-          ElMessage.error('获取评论失败');
+          console.error('获取服务器数据失败:', response.status)
+          ElMessage.error('获取内容失败')
+          // 设置默认幻想类型为联想
+          store.updateFantasy(1)
+          // 确保清空图片列表
+          store.updateImages([])
         }
       } catch (error) {
-        ElMessage.error('网络错误，获取评论失败');
+        console.error('获取服务器数据时出错:', error)
+        ElMessage.error('网络错误，获取内容失败')
+        // 设置默认幻想类型为联想
+        store.updateFantasy(1)
+        // 确保清空图片列表
+        store.updateImages([])
+      } finally {
+        // 获取数据后将firstFetch设置为0
+        store.updateFirstFetch(0)
       }
     }
-    
-    // 添加评论
-    const addComment = async () => {
-      if (!newComment.value.trim()) {
-        ElMessage.warning('请输入评论内容');
-        return;
+
+    // 从服务器获取评论
+    const fetchComments = async () => {
+      // 获取共享状态中的ID
+      const id = store.getId()
+      
+      // 检查ID是否存在
+      if (!id) {
+        ElMessage.error('无法获取评论：缺少内容ID')
+        return
       }
       
       try {
-        const response = await fetch(API_ENDPOINTS.comments, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            bottleId: store.getId(),
-            text: newComment.value
-          })
-        });
+        // 向服务器发送请求获取评论
+        const response = await fetch(`${API_ENDPOINTS.records}/${id}/comments`)
         
         if (response.ok) {
-          ElMessage.success('评论发表成功');
-          newComment.value = '';
-          fetchComments(); // 重新获取评论
+          const data = await response.json()
+          
+          // 检查返回的数据是否为数组
+          if (Array.isArray(data)) {
+            // 更新评论列表，包含评论ID
+            comments.value = data.map(comment => ({
+              id: comment.id,
+              text: comment.content,
+              time: comment.commentTime || new Date().toLocaleString('zh-CN')
+            }))
+          } else {
+            console.warn('服务器返回的评论数据格式不正确')
+            comments.value = []
+          }
         } else {
-          ElMessage.error('评论发表失败');
+          console.error('获取评论失败:', response.status)
+          ElMessage.error('获取评论失败')
+          comments.value = []
         }
       } catch (error) {
-        ElMessage.error('网络错误，评论发表失败');
+        console.error('获取评论时出错:', error)
+        ElMessage.error('网络错误，获取评论失败')
+        comments.value = []
       }
     }
+
+    // 添加 onMounted 钩子
+    onMounted(() => {
+      // 检查firstFetch状态，当且仅当firstFetch为1时才从服务器获取数据
+      if (store.getFirstFetch() === 1) {
+        fetchRandomContent().then(() => {
+          // 内容加载成功后获取评论
+          fetchComments()
+        })
+      }
+    })
     
-    // 扔出漂流瓶
-    const throwBottle = async () => {
-      try {
-        // 检查是否为新内容
-        if (store.getFirstFetch() === 0) {
-          // 新内容，使用POST方法
-          const response = await fetch(API_ENDPOINTS.records, {
+    // 添加评论
+    const addComment = async () => {
+      if (newComment.value.trim()) {
+        // 获取共享状态中的ID
+        const id = store.getId();
+        
+        // 检查ID是否存在
+        if (!id) {
+          ElMessage.error('无法发表评论：缺少内容ID');
+          return;
+        }
+        
+        try {
+          // 向服务器发送评论
+          const response = await fetch(`${API_ENDPOINTS.records}/${id}/comments`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(content.value)
+            body: JSON.stringify({
+              content: newComment.value
+            })
           });
           
           if (response.ok) {
-            const data = await response.json();
-            store.updateId(data.id);
-            store.updateUploadTime(data.uploadTime);
-            store.updateFirstFetch(1);
-            store.updateIfEdit(0);
-            ElMessage.success('漂流瓶扔出成功');
-            router.push('/');
+            newComment.value = '';
+            ElMessage.success('评论发表成功，正在等待审核！');
           } else {
-            ElMessage.error('漂流瓶扔出失败');
+            console.error('服务器返回错误:', response.status);
+            ElMessage.error('评论发表失败，请稍后重试');
           }
-        } else {
-          // 已存在的内容，检查是否被编辑
-          if (store.getIfEdit() === 1) {
-            // 内容被编辑，使用PUT方法
-            const response = await fetch(API_ENDPOINTS.records + '/' + store.getId(), {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(content.value)
-            });
-            
-            if (response.ok) {
-              store.updateIfEdit(0);
-              ElMessage.success('漂流瓶更新成功');
-              router.push('/');
-            } else {
-              ElMessage.error('漂流瓶更新失败');
-            }
-          } else {
-            // 内容未被编辑，直接返回首页
-            router.push('/');
-          }
+        } catch (error) {
+          console.error('发表评论时出错:', error);
+          ElMessage.error('网络错误，评论发表失败');
         }
-      } catch (error) {
-        ElMessage.error('网络错误，操作失败');
       }
-    }
-    
-    // 前往编辑页面
-    const goToEdit = () => {
-      router.push('/edit');
-    }
-    
-    // 图片加载处理
-    const handleImageLoad = (index) => {
-      // 图片加载成功处理
-    }
-    
-    // 图片加载错误处理
-    const handleImageError = (index) => {
-      ElMessage.error(`图片加载失败`);
-    }
-    
-    // 图片加载进度处理
-    const handleImageProgress = (index, event) => {
-      imageLoadStatus.value[index] = {
-        progress: Math.round(event.percent)
-      };
-    }
-    
-    // 重试图片加载
-    const retryImageLoad = (index) => {
-      // 重试加载逻辑
-    }
-    
-    // 初始化数据
-    onMounted(() => {
-      fetchBottleData();
-      fetchComments();
-    })
-    
+    };
+
+    // 格式化时间显示
+    const formatTime = (timeString) => {
+      if (!timeString) return '未知时间';
+      
+      const date = new Date(timeString);
+      const now = new Date();
+      const diff = now - date;
+      
+      // 计算时间差
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+      
+      if (seconds < 60) {
+        return '刚刚';
+      } else if (minutes < 60) {
+        return `${minutes}分钟前`;
+      } else if (hours < 24) {
+        return `${hours}小时前`;
+      } else if (days < 30) {
+        return `${days}天前`;
+      } else {
+        // 超过30天显示具体日期
+        return date.toLocaleDateString('zh-CN');
+      }
+    };
+
     return {
       content,
       images,
-      comments,
-      newComment,
+      store,
+      handleImageLoad,
+      handleImageError,
+      handleImageProgress,
+      retryImageLoad,
+      goToEdit,
+      throwBottle,
       dialogVisible,
       instructionsText,
       carrierTag,
       fantasyTag,
       existTag,
-      showImages,
       imageLoadStatus,
-      formatTime: formatTimeDisplay,
-      fetchBottleData,
-      fetchComments,
+      showImages, // 添加 showImages 属性
+      // 评论功能相关
+      newComment,
+      comments,
       addComment,
-      throwBottle,
-      goToEdit,
-      handleImageLoad,
-      handleImageError,
-      handleImageProgress,
-      retryImageLoad
+      // 时间格式化函数
+      formatTime
     }
   }
 }
@@ -730,10 +1133,14 @@ export default {
 }
 
 .comment-time {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  font-size: 12px;
   color: #999;
+}
+
+.comment-time .el-icon {
+  margin-right: 4px;
   font-size: 12px;
 }
 

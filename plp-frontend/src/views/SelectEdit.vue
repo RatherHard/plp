@@ -181,7 +181,7 @@ import {
   getFantasyTag, 
   shouldShowImageUpload, 
   getMaxTextLength 
-} from '../utils'
+} from '../utils/bottle'
 
 export default {
   name: 'SelectEdit',
@@ -238,6 +238,7 @@ export default {
     const showImageUpload = computed(() => {
       try {
         const fantasy = selectedFantasy.value === '空想' ? 0 : 1;
+        // 使用工具函数判断是否显示图片上传
         return shouldShowImageUpload(fantasy);
       } catch (e) {
         // 默认显示图片上传功能（联想）
@@ -249,6 +250,7 @@ export default {
     const maxTextLength = computed(() => {
       try {
         const fantasy = selectedFantasy.value === '空想' ? 0 : 1;
+        // 使用工具函数获取最大文本长度
         return getMaxTextLength(fantasy);
       } catch (e) {
         // 默认为联想的字数限制

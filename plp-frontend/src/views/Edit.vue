@@ -10,7 +10,7 @@
           <el-col :span="24">
             <BottleEditor
               v-model="contentCopy"
-              :show-image-upload="showImageUpload"
+              :show-image-upload="!!showImageUpload"
               :max-text-length="maxTextLength"
               :disable-image-actions="disableImageActions"
               :carrier-tag="carrierTag"
@@ -36,7 +36,12 @@ import FooterComponent from '../components/Footer.vue'
 import VideoBackground from '../components/VideoBackground.vue'
 import BottleEditor from '../components/BottleEditor.vue'
 import store from '../store'
-import { getCarrierTag, getFantasyTag, shouldShowImageUpload, getMaxTextLength, isContentModified } from '../utils'
+import { 
+  getCarrierTag, 
+  getFantasyTag, 
+  shouldShowImageUpload, 
+  getMaxTextLength 
+} from '../utils/bottle'
 
 export default {
   name: 'Edit',
@@ -78,6 +83,7 @@ export default {
       try {
         const content = store.getContent();
         const fantasy = content && content.fantasy !== undefined ? content.fantasy : 0;
+        // 使用工具函数判断是否显示图片上传
         return shouldShowImageUpload(fantasy);
       } catch (e) {
         // 默认显示图片上传功能（联想）
@@ -90,6 +96,7 @@ export default {
       try {
         const content = store.getContent();
         const fantasy = content && content.fantasy !== undefined ? content.fantasy : 0;
+        // 使用工具函数获取最大文本长度
         return getMaxTextLength(fantasy);
       } catch (e) {
         // 默认为联想的字数限制
@@ -146,11 +153,19 @@ export default {
       // 使用content完全覆盖共享状态
       store.updateContent(content);
       
-      // 检查内容是否被修改
-      const modified = isContentModified(originalContent, content);
+      // 检查内容是否被修改（标题、正文或图片）
+      const isTitleChanged = originalContent.title !== content.title;
+      const isTextChanged = originalContent.text !== content.text;
+      const isImagesChanged = JSON.stringify(originalContent.images) !== JSON.stringify(content.images);
       
       // 根据内容是否被修改来设置ifEdit状态
-      store.updateIfEdit(modified ? 1 : 0);
+      if (isTitleChanged || isTextChanged || isImagesChanged) {
+        // 内容被修改，设置ifEdit为1
+        store.updateIfEdit(1);
+      } else {
+        // 内容未被修改，设置ifEdit为0
+        store.updateIfEdit(0);
+      }
       
       // 保存内容逻辑（现在由store自动处理本地存储）
       ElMessage.success('内容已保存!')
