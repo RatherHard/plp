@@ -6,10 +6,10 @@
       autoplay 
       loop 
       muted
-      v-if="videoSrc && !fallback"
+      v-if="videoSrc && !fallback && !isWechat"
       @error="handleVideoError"
     ></video>
-    <div v-if="fallback" class="fallback-background">
+    <div v-if="fallback || isWechat" class="fallback-background">
       <img 
         src="/videos/fallback-frame.png" 
         alt="Fallback Background"
@@ -44,8 +44,14 @@ export default {
     let videoSrc = ref('')
     const fallback = ref(false)
     const imageError = ref(false)
+    // 检测是否在微信浏览器中
+    const isWechat = ref(false)
     
     onMounted(async () => {
+      // 检测是否在微信浏览器中
+      const userAgent = navigator.userAgent.toLowerCase()
+      isWechat.value = userAgent.includes('micromessenger')
+      
       try {
         // 检查视频文件是否存在
         const response = await fetch(props.videoPath, { method: 'HEAD' })
@@ -71,6 +77,7 @@ export default {
       videoSrc,
       fallback,
       imageError,
+      isWechat,
       handleVideoError,
       handleImageError
     }
