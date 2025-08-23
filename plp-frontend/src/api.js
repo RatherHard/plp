@@ -1,6 +1,17 @@
-// 基础URL配置，可以从环境变量中获取，如果没有则使用默认值
-const PORT = 5208;
-const BASE_URL = 'https://plp-bak.home.cszj.wang:' + PORT;
+// 根据环境确定API基础URL
+const getBaseUrl = () => {
+  // 开发环境使用本地地址
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001';
+  }
+  // 生产环境使用线上地址
+  else {
+    const PORT = 5208;
+    return 'https://plp-bak.home.cszj.wang:' + PORT;
+  }
+};
+
+const BASE_URL = getBaseUrl();
 
 // API端点配置
 export const API_ENDPOINTS = {
