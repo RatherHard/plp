@@ -10,6 +10,9 @@ plp-frontend/package-lock.json
 #static files
 plp-frontend/dist/
 
+# Version control
+plp-frontend/version.json
+
 # Uploads directory
 plp-backend/uploads/
 
