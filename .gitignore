@@ -24,3 +24,4 @@ plp-backend/database.sqlite
 
 # IDE files
 .vscode/
+plp-frontend/public/version.json

@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node generate-version.js && cd plp-frontend && npm run build",
-    "dev": "cd plp-frontend && npm run dev",
-    "backend": "cd plp-backend && npm start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run dev --prefix plp-backend\" \"npm run dev --prefix plp-frontend\"",
+    "dev:backend": "npm run dev --prefix plp-backend",
+    "dev:frontend": "npm run dev --prefix plp-frontend",
+    "install:all": "npm install && npm install --prefix plp-backend && npm install --prefix plp-frontend",
+    "build": "node generate-version.js &&npm run build --prefix plp-frontend"
   },
   "keywords": [],
   "author": "",
