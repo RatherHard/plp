@@ -112,7 +112,7 @@
                 <div class="comment-meta">
                   <span class="comment-time">
                     <el-icon><Clock /></el-icon>
-                    {{ comment.time }}
+                    {{ formatTime(comment.time) }}
                   </span>
                 </div>
               </div>
@@ -789,12 +789,12 @@ export default {
     const addComment = async () => {
       if (newComment.value.trim()) {
         // 获取共享状态中的ID
-        const id = store.getId()
+        const id = store.getId();
         
         // 检查ID是否存在
         if (!id) {
-          ElMessage.error('无法发表评论：缺少内容ID')
-          return
+          ElMessage.error('无法发表评论：缺少内容ID');
+          return;
         }
         
         try {
@@ -807,22 +807,50 @@ export default {
             body: JSON.stringify({
               content: newComment.value
             })
-          })
+          });
           
           if (response.ok) {
-            newComment.value = ''
-            ElMessage.success('评论发表成功，正在等待审核！')
+            newComment.value = '';
+            ElMessage.success('评论发表成功，正在等待审核！');
           } else {
-            console.error('服务器返回错误:', response.status)
-            ElMessage.error('评论发表失败，请稍后重试')
+            console.error('服务器返回错误:', response.status);
+            ElMessage.error('评论发表失败，请稍后重试');
           }
         } catch (error) {
-          console.error('发表评论时出错:', error)
-          ElMessage.error('网络错误，评论发表失败')
+          console.error('发表评论时出错:', error);
+          ElMessage.error('网络错误，评论发表失败');
         }
       }
-    }
-    
+    };
+
+    // 格式化时间显示
+    const formatTime = (timeString) => {
+      if (!timeString) return '未知时间';
+      
+      const date = new Date(timeString);
+      const now = new Date();
+      const diff = now - date;
+      
+      // 计算时间差
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+      
+      if (seconds < 60) {
+        return '刚刚';
+      } else if (minutes < 60) {
+        return `${minutes}分钟前`;
+      } else if (hours < 24) {
+        return `${hours}小时前`;
+      } else if (days < 30) {
+        return `${days}天前`;
+      } else {
+        // 超过30天显示具体日期
+        return date.toLocaleDateString('zh-CN');
+      }
+    };
+
     return {
       content,
       images,
@@ -844,7 +872,9 @@ export default {
       // 评论功能相关
       newComment,
       comments,
-      addComment
+      addComment,
+      // 时间格式化函数
+      formatTime
     }
   }
 }
