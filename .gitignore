@@ -11,7 +11,7 @@ plp-frontend/package-lock.json
 plp-frontend/dist/
 
 # Version control
-plp-frontend/version.json
+plp-frontend/public/version.json
 
 # Uploads directory
 plp-backend/uploads/
