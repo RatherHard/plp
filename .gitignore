@@ -3,10 +3,6 @@ node_modules/
 plp-backend/node_modules/
 plp-frontend/node_modules/
 
-package-lock.json
-plp-backend/package-lock.json
-plp-frontend/package-lock.json
-
 #static files
 plp-frontend/dist/
 
