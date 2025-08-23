@@ -176,6 +176,12 @@ import FooterComponent from '../components/Footer.vue'
 import VideoBackground from '../components/VideoBackground.vue'
 import BottleEditor from '../components/BottleEditor.vue'
 import store from '../store'
+import { 
+  getCarrierTag, 
+  getFantasyTag, 
+  shouldShowImageUpload, 
+  getMaxTextLength 
+} from '../utils'
 
 export default {
   name: 'SelectEdit',
@@ -210,16 +216,10 @@ export default {
     const carrierTag = computed(() => {
       try {
         const carrier = selectedCarrier.value === '牛皮纸' ? 0 : 1;
-        return {
-          text: carrier === 0 ? '牛皮纸' : '永恒纸',
-          type: carrier === 0 ? 'primary' : 'success'
-        }
+        return getCarrierTag(carrier);
       } catch (e) {
         // 出现错误时返回默认值
-        return {
-          text: '牛皮纸',
-          type: 'primary'
-        }
+        return getCarrierTag(0);
       }
     })
     
@@ -227,16 +227,10 @@ export default {
     const fantasyTag = computed(() => {
       try {
         const fantasy = selectedFantasy.value === '空想' ? 0 : 1;
-        return {
-          text: fantasy === 0 ? '空想' : '联想',
-          type: fantasy === 0 ? 'warning' : 'info'
-        }
+        return getFantasyTag(fantasy);
       } catch (e) {
         // 出现错误时返回默认值
-        return {
-          text: '空想',
-          type: 'warning'
-        }
+        return getFantasyTag(0);
       }
     })
     
@@ -244,8 +238,7 @@ export default {
     const showImageUpload = computed(() => {
       try {
         const fantasy = selectedFantasy.value === '空想' ? 0 : 1;
-        // 空想(fantasy=0)不显示图片上传，联想(fantasy>1)显示图片上传
-        return fantasy;
+        return shouldShowImageUpload(fantasy);
       } catch (e) {
         // 默认显示图片上传功能（联想）
         return true;
@@ -256,11 +249,10 @@ export default {
     const maxTextLength = computed(() => {
       try {
         const fantasy = selectedFantasy.value === '空想' ? 0 : 1;
-        // 空想(fantasy=0)最多4000字，联想(fantasy>1)最多8000字
-        return fantasy === 0 ? 4000 : 8000;
+        return getMaxTextLength(fantasy);
       } catch (e) {
         // 默认为联想的字数限制
-        return 8000;
+        return getMaxTextLength(1);
       }
     })
     

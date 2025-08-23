@@ -36,6 +36,7 @@ import FooterComponent from '../components/Footer.vue'
 import VideoBackground from '../components/VideoBackground.vue'
 import BottleEditor from '../components/BottleEditor.vue'
 import store from '../store'
+import { getCarrierTag, getFantasyTag, shouldShowImageUpload, getMaxTextLength, isContentModified } from '../utils'
 
 export default {
   name: 'Edit',
@@ -53,16 +54,10 @@ export default {
       try {
         const content = store.getContent();
         const carrier = content && content.carrier !== undefined ? content.carrier : 0;
-        return {
-          text: carrier === 0 ? '牛皮纸' : '永恒纸',
-          type: carrier === 0 ? 'primary' : 'success'
-        }
+        return getCarrierTag(carrier);
       } catch (e) {
         // 出现错误时返回默认值
-        return {
-          text: '牛皮纸',
-          type: 'primary'
-        }
+        return getCarrierTag(0);
       }
     })
     
@@ -71,16 +66,10 @@ export default {
       try {
         const content = store.getContent();
         const fantasy = content && content.fantasy !== undefined ? content.fantasy : 0;
-        return {
-          text: fantasy === 0 ? '空想' : '联想',
-          type: fantasy === 0 ? 'warning' : 'info'
-        }
+        return getFantasyTag(fantasy);
       } catch (e) {
         // 出现错误时返回默认值
-        return {
-          text: '空想',
-          type: 'warning'
-        }
+        return getFantasyTag(0);
       }
     })
     
@@ -89,8 +78,7 @@ export default {
       try {
         const content = store.getContent();
         const fantasy = content && content.fantasy !== undefined ? content.fantasy : 0;
-        // 空想(fantasy=0)不显示图片上传，联想(fantasy>1)显示图片上传
-        return fantasy;
+        return shouldShowImageUpload(fantasy);
       } catch (e) {
         // 默认显示图片上传功能（联想）
         return true;
@@ -102,11 +90,10 @@ export default {
       try {
         const content = store.getContent();
         const fantasy = content && content.fantasy !== undefined ? content.fantasy : 0;
-        // 空想(fantasy=0)最多4000字，联想(fantasy>1)最多8000字
-        return fantasy === 0 ? 4000 : 8000;
+        return getMaxTextLength(fantasy);
       } catch (e) {
         // 默认为联想的字数限制
-        return 8000;
+        return getMaxTextLength(1);
       }
     })
     
@@ -159,19 +146,11 @@ export default {
       // 使用content完全覆盖共享状态
       store.updateContent(content);
       
-      // 检查内容是否被修改（标题、正文或图片）
-      const isTitleChanged = originalContent.title !== content.title;
-      const isTextChanged = originalContent.text !== content.text;
-      const isImagesChanged = JSON.stringify(originalContent.images) !== JSON.stringify(content.images);
+      // 检查内容是否被修改
+      const modified = isContentModified(originalContent, content);
       
       // 根据内容是否被修改来设置ifEdit状态
-      if (isTitleChanged || isTextChanged || isImagesChanged) {
-        // 内容被修改，设置ifEdit为1
-        store.updateIfEdit(1);
-      } else {
-        // 内容未被修改，设置ifEdit为0
-        store.updateIfEdit(0);
-      }
+      store.updateIfEdit(modified ? 1 : 0);
       
       // 保存内容逻辑（现在由store自动处理本地存储）
       ElMessage.success('内容已保存!')
