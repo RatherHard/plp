@@ -243,12 +243,6 @@ export default {
   overflow: hidden;
 }
 
-.fallback-background {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
 .main-content {
   padding: 20px;
   min-height: 100vh;

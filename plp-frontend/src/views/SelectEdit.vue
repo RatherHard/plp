@@ -655,14 +655,6 @@ export default {
   opacity: 0.8;
 }
 
-.fallback-background {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-}
-
 .main-content {
   position: relative;
   top: 51px;
