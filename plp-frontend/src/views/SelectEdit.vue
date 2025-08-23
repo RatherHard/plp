@@ -111,101 +111,34 @@
             </div>
             
             <div class="content-display">
-              <el-card class="content-card">
-                <template #header>
-                  <div class="card-header">
-                    <el-icon><Edit /></el-icon>
-                    <span>内容编辑</span>
-                    <div class="content-tags">
-                      <el-tag class="tag" :type="carrierTag.type">{{ carrierTag.text }}</el-tag>
-                      <el-tag class="tag" :type="fantasyTag.type">{{ fantasyTag.text }}</el-tag>
-                    </div>
+              <BottleEditor
+                ref="editor"
+                v-model="contentCopy"
+                :show-image-upload="!!showImageUpload"
+                :max-text-length="maxTextLength"
+                :disable-image-actions="disableImageActions"
+                :carrier-tag="carrierTag"
+                :fantasy-tag="fantasyTag"
+                @save="handleSave"
+                @cancel="handleCancel"
+              >
+                <template #actions>
+                  <div class="editor-actions">
+                    <el-button @click="prevStep" class="action-button">
+                      <el-icon><ArrowLeft /></el-icon>
+                      上一步
+                    </el-button>
+                    <el-button type="primary" @click="saveContent" class="action-button">
+                      <el-icon><Check /></el-icon>
+                      保存
+                    </el-button>
+                    <el-button type="danger" @click="showCancelDialog" class="action-button">
+                      <el-icon><Close /></el-icon>
+                      放弃
+                    </el-button>
                   </div>
                 </template>
-                
-                <div class="editor-section">
-                  <div class="input-label">
-                    <el-icon><Document /></el-icon>
-                    标题
-                  </div>
-                  <el-input
-                    v-model="displayTitle"
-                    placeholder="请输入标题（不超过20字）"
-                    class="title-editor"
-                    maxlength="20"
-                    show-word-limit
-                  />
-                </div>
-                
-                <div class="editor-section">
-                  <div class="input-label">
-                    <el-icon><Document /></el-icon>
-                    正文
-                  </div>
-                  <el-input
-                    v-model="content.text"
-                    type="textarea"
-                    :rows="10"
-                    placeholder="请输入漂流瓶的文字内容..."
-                    class="text-editor"
-                    :maxlength="maxTextLength"
-                    show-word-limit
-                  />
-                </div>
-                
-                <div class="image-upload-section" v-if="showImageUpload">
-                  <div class="input-label">
-                    <el-icon><Picture /></el-icon>
-                    上传图片
-                  </div>
-                  <el-upload
-                    class="image-uploader"
-                    action=""
-                    :auto-upload="false"
-                    :file-list="fileList"
-                    :on-change="handleFileChange"
-                    :on-remove="handleFileRemove"
-                    :on-preview="handlePreview"
-                    list-type="picture-card"
-                    :disabled="disableImageActions"
-                  >
-                    <el-icon v-if="!disableImageActions"><Plus /></el-icon>
-                    <div class="el-upload__text" v-if="!disableImageActions">
-                      <em>点击上传</em>
-                    </div>
-                    <div class="el-upload__text" v-else>
-                      <em>仅可预览图片</em>
-                    </div>
-                  </el-upload>
-                  
-                  <!-- 图片预览对话框 -->
-                  <el-dialog v-model="previewDialogVisible" class="image-preview-dialog" :show-close="false">
-                    <template #header="{ close }">
-                      <div class="preview-header">
-                        <button class="close-button" @click="close">
-                          <el-icon><Close /></el-icon>
-                        </button>
-                      </div>
-                    </template>
-                    <img :src="previewImageUrl" class="preview-image" />
-                  </el-dialog>
-                </div>
-              </el-card>
-              
-              <div class="editor-actions">
-                <el-button @click="prevStep" class="action-button">
-                  <el-icon><ArrowLeft /></el-icon>
-                  上一步
-                </el-button>
-                <el-button type="primary" @click="saveContent" class="action-button">
-                  <el-icon><Check /></el-icon>
-                  保存
-                </el-button>
-                <el-button type="danger" @click="showCancelDialog" class="action-button">
-                  <el-icon><Close /></el-icon>
-                  放弃
-                </el-button>
-              </div>
+              </BottleEditor>
             </div>
           </div>
         </div>
@@ -227,22 +160,6 @@
           </span>
         </template>
       </el-dialog>
-      
-      <!-- 放弃编辑确认弹窗 -->
-      <el-dialog
-        v-model="cancelDialogVisible"
-        title="确认放弃"
-        width="30%"
-        center
-      >
-        <span>确定要放弃编辑吗？未保存的内容将会丢失</span>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="cancelDialogVisible = false">取消</el-button>
-            <el-button type="danger" @click="goBack">确定</el-button>
-          </span>
-        </template>
-      </el-dialog>
     </main>
     
     <FooterComponent />
@@ -250,13 +167,14 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, Close, ArrowRight, ArrowLeft, Check, Document, Lightning, Picture, Edit } from '@element-plus/icons-vue'
+import { ArrowRight, ArrowLeft, Close, Document, Lightning, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, ElSteps, ElStep } from 'element-plus'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
 import VideoBackground from '../components/VideoBackground.vue'
+import BottleEditor from '../components/BottleEditor.vue'
 import store from '../store'
 
 export default {
@@ -265,15 +183,13 @@ export default {
     HeaderComponent,
     FooterComponent,
     VideoBackground,
-    Plus,
-    Close,
+    BottleEditor,
     ArrowRight,
     ArrowLeft,
-    Check,
+    Close,
     Document,
     Lightning,
-    Picture,
-    Edit,
+    Check,
     ElSteps,
     ElStep
   },
@@ -281,9 +197,7 @@ export default {
     const router = useRouter()
     const activeStep = ref(0)
     const dialogVisible = ref(false)
-    const previewDialogVisible = ref(false)
-    const previewImageUrl = ref('')
-    const cancelDialogVisible = ref(false)
+    const editor = ref(null)
     
     // 获取网站说明文本
     const instructionsText = computed(() => store.getInstructionsText())
@@ -369,24 +283,6 @@ export default {
       images: []
     })
     
-    // 使用副本中的内容
-    const content = computed({
-      get: () => contentCopy.value,
-      set: (newContent) => {
-        contentCopy.value = { ...contentCopy.value, ...newContent }
-      }
-    })
-    
-    // 显示标题的计算属性（用于标题输入框）
-    const displayTitle = computed({
-      get: () => contentCopy.value.title,
-      set: (title) => {
-        contentCopy.value.title = title
-      }
-    })
-    
-    const fileList = ref([])
-    
     // 步骤控制
     const nextStep = () => {
       if (selectedCarrier.value && selectedFantasy.value) {
@@ -413,133 +309,19 @@ export default {
       activeStep.value--
     }
     
-    // 文件上传处理函数
-    const handleFileChange = (file, fileList) => {
-      // 确保 fileList.value 存在
-      if (!fileList.value || !Array.isArray(fileList.value)) {
-        fileList.value = [];
-      }
-      
-      // 检查文件是否为图片格式
-      const isImage = file.raw.type.startsWith('image/');
-      if (!isImage) {
-        ElMessage.error('只能上传图片文件!');
-        // 从文件列表中移除无效文件
-        const index = fileList.value.findIndex(f => f.uid === file.uid);
-        if (index !== -1) {
-          fileList.value.splice(index, 1);
-        }
-        // 同时从副本中移除（通过索引匹配）
-        if (index !== -1 && index < contentCopy.value.images.length) {
-          contentCopy.value.images.splice(index, 1);
-        }
-        // 更新文件列表以刷新显示
-        updateFileList();
-        return;
-      }
-      
-      // 检查文件大小（限制为10MB）
-      const isLt10M = file.raw.size / 1024 / 1024 < 10;
-      if (!isLt10M) {
-        ElMessage.error('图片大小不能超过 10MB!');
-        // 从文件列表中移除过大的文件
-        const index = fileList.value.findIndex(f => f.uid === file.uid);
-        if (index !== -1) {
-          fileList.value.splice(index, 1);
-        }
-        // 同时从副本中移除（通过索引匹配）
-        if (index !== -1 && index < contentCopy.value.images.length) {
-          contentCopy.value.images.splice(index, 1);
-        }
-        // 更新文件列表以刷新显示
-        updateFileList();
-        return;
-      }
-      
-      // 检查图片数量限制（最多10张）
-      if (fileList.length > 10) {
-        ElMessage.error('最多只能上传10张图片!');
-        // 从文件列表中移除超出限制的文件
-        const index = fileList.value.findIndex(f => f.uid === file.uid);
-        if (index !== -1) {
-          fileList.value.splice(index, 1);
-        }
-        // 同时从副本中移除（通过索引匹配）
-        if (index !== -1 && index < contentCopy.value.images.length) {
-          contentCopy.value.images.splice(index, 1);
-        }
-        // 更新文件列表以刷新显示
-        updateFileList();
-        return;
-      }
-      
-      // 创建 FileReader 实例
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        // 添加到副本中
-        contentCopy.value.images.push(e.target.result);
-        // 更新文件列表以刷新显示
-        updateFileList();
-      };
-      
-      reader.readAsDataURL(file.raw);
-    }
-    
-    const handleFileRemove = (file, fileList) => {
-      // 确保 fileList.value 是一个数组
-      if (!Array.isArray(fileList.value)) {
-        fileList.value = [];
-      }
-      
-      // 查找被删除文件的索引
-      const index = fileList.value.findIndex(item => item && item.uid === file.uid);
-      
-      if (index > -1) {
-        // 从内容副本中移除对应的图片
-        contentCopy.value.images.splice(index, 1);
-      } else {
-        // 如果通过 uid 没有找到，尝试通过 URL 查找
-        const imageUrl = file.url || (file.response && file.response?.url);
-        if (imageUrl) {
-          const imageIndex = contentCopy.value.images.indexOf(imageUrl);
-          if (imageIndex > -1) {
-            contentCopy.value.images.splice(imageIndex, 1);
-          }
-        }
-      }
-      
-      // 更新文件列表以保持同步
-      fileList.value = fileList;
-    }
-    
-    // 更新文件列表的辅助函数
-    const updateFileList = () => {
-      fileList.value = contentCopy.value.images.map((image, index) => ({
-        name: `image-${index}.png`,
-        url: image
-      }));
-    }
-    
-    // 图片预览处理函数
-    const handlePreview = (file) => {
-      previewImageUrl.value = file.url || file.response?.url || '';
-      previewDialogVisible.value = true;
-    }
-    
     // 保存内容
-    const saveContent = () => {
+    const handleSave = (content) => {
       // 检查如果是联想类型(fantasy不为0)，则必须有图片
-      const fantasy = contentCopy.value.fantasy;
-      const images = contentCopy.value.images;
+      const fantasy = content.fantasy;
+      const images = content.images;
       
       if (fantasy !== 0 && images.length === 0) {
         ElMessage.error('联想类型的内容必须包含至少一张图片！');
         return;
       }
       
-      // 使用contentCopy完全覆盖共享状态
-      store.updateContent(contentCopy.value);
+      // 使用content完全覆盖共享状态
+      store.updateContent(content);
       
       // 设置ifEdit为1（因为是新内容）
       store.updateIfEdit(1);
@@ -549,62 +331,50 @@ export default {
       router.push('/view')
     }
     
+    // 直接调用编辑器的保存方法
+    const saveContent = () => {
+      if (editor.value) {
+        editor.value.saveContent()
+      }
+    }
+    
+    // 显示放弃确认弹窗
+    const showCancelDialog = () => {
+      if (editor.value) {
+        editor.value.showCancelDialog()
+      }
+    }
+    
     // 放弃选择并返回首页
     const cancelSelection = () => {
       router.push('/')
     }
     
-    const goBack = () => {
+    // 取消编辑处理函数
+    const handleCancel = () => {
       router.go(-1)
     }
     
-    // 显示放弃确认弹窗
-    const showCancelDialog = () => {
-      ElMessageBox.confirm(
-        '确定要放弃编辑吗？未保存的内容将会丢失。',
-        '确认放弃',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-        }
-      )
-      .then(() => {
-        // 用户确认放弃，返回上一页
-        router.go(-1)
-      })
-      .catch(() => {
-        // 用户取消操作，不执行任何操作
-        ElMessage.info('已取消放弃操作')
-      })
-    }
-
     return {
       activeStep,
       selectedCarrier,
       selectedFantasy,
-      content,
-      displayTitle,
-      fileList,
-      handleFileChange,
-      handleFileRemove,
-      handlePreview,
-      saveContent,
-      nextStep,
-      prevStep,
-      cancelSelection,
-      goBack,
-      showCancelDialog,
+      contentCopy,
       dialogVisible,
-      previewDialogVisible,
-      previewImageUrl,
-      cancelDialogVisible,
+      editor,
       instructionsText,
       carrierTag,
       fantasyTag,
       showImageUpload,
       maxTextLength,
-      disableImageActions
+      disableImageActions,
+      nextStep,
+      prevStep,
+      handleSave,
+      saveContent,
+      showCancelDialog,
+      cancelSelection,
+      handleCancel
     }
   }
 }
@@ -615,44 +385,6 @@ export default {
   position: relative;
   height: 100vh;
   overflow: hidden;
-}
-
-.video-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
-  background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-}
-
-@keyframes gradientBG {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.background-video {
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-  opacity: 0.8;
 }
 
 .main-content {
@@ -795,122 +527,23 @@ export default {
   border-color: #f56c6c;
 }
 
-.content-card {
+.content-display {
   margin-bottom: 25px;
-  border-radius: 10px;
-  border: 1px solid #e6e6e6;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-}
-
-.content-card .card-header {
-  justify-content: space-between;
-}
-
-.content-tags {
-  display: flex;
-  gap: 10px;
-}
-
-.content-tags .tag {
-  margin: 0;
-}
-
-.editor-section {
-  margin-bottom: 25px;
-}
-
-.input-label {
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #333;
-}
-
-.input-label .el-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.title-editor {
-  margin-bottom: 20px;
-}
-
-.text-editor {
-  margin-bottom: 20px;
-}
-
-.image-upload-section {
-  margin: 25px 0;
-}
-
-.image-uploader {
-  width: 100%;
 }
 
 .editor-actions {
   display: flex;
   justify-content: center;
   gap: 20px;
-  padding: 20px 0;
+  padding: 30px;
 }
 
-.dialog-footer {
-  text-align: center;
-}
-
-.instructions {
-  line-height: 1.8;
-  color: #333;
+.editor-actions :deep(.el-button) {
   font-size: 16px;
-}
-
-.image-preview-dialog :deep(.el-dialog__body) {
-  padding: 0;
-}
-
-.preview-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.preview-header {
-  position: relative;
-  height: 0;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  cursor: pointer;
+  padding: 12px 30px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.close-button:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: scale(1.05);
-}
-
-.close-button .el-icon {
-  font-size: 20px;
-  color: #666;
-}
-
-:deep(.el-radio__label) {
-  width: 100%;
-  padding-right: 30px;
+  gap: 6px;
 }
 </style>
