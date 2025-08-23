@@ -119,7 +119,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Plus, Close, Document, Picture, Edit, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -212,6 +212,17 @@ export default {
         fileList.value = []
       }
     }
+    
+    // 在组件挂载时初始化文件列表
+    onMounted(() => {
+      initFileList()
+    })
+    
+    // 监听content.value.images的变化，及时更新文件列表
+    // 这确保了当父组件更新内容时，文件列表也会同步更新
+    watch(() => content.value.images, () => {
+      initFileList()
+    }, { deep: true })
     
     // 文件上传处理函数
     const handleFileChange = (file, fileList) => {
