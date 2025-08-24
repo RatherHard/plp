@@ -180,7 +180,7 @@ import {
 } from '@element-plus/icons-vue'
 import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
-import store from '../store'
+import store from '../utils/store'
 import VideoBackground from '../components/VideoBackground.vue'
 import { formatTime } from '../utils/time'
 import { getCarrierTag, getFantasyTag, getExistTag } from '../utils/bottle'

@@ -35,7 +35,7 @@ import HeaderComponent from '../components/Header.vue'
 import FooterComponent from '../components/Footer.vue'
 import VideoBackground from '../components/VideoBackground.vue'
 import BottleEditor from '../components/BottleEditor.vue'
-import store from '../store'
+import store from '../utils/store'
 import { 
   getCarrierTag, 
   getFantasyTag, 

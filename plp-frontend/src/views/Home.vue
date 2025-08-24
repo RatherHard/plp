@@ -34,7 +34,7 @@
 import { defineComponent, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import HeaderComponent from '../components/Header.vue'
-import store from '../store'
+import store from '../utils/store'
 import VideoBackground from '../components/VideoBackground.vue'
 
 
