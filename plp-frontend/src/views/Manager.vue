@@ -1502,7 +1502,7 @@ export default {
   background: #ffffff;
   border-right: 1px solid #e6e6e6;
   padding: 15px;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .filter-card {
